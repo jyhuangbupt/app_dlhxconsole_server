@@ -1,0 +1,65 @@
+{% extends "platform/index.html" %}
+{% block title %} {{ super() }}{% endblock title %}
+
+{% block head %}
+    {{ super() }}
+    <script type="text/javascript">
+        $(document).ready(function() {
+
+        });
+    </script>
+    <style type="text/css">
+    </style>
+{% endblock head %}
+
+{% block right_content %}
+    <form class="form-horizontal" action="/{{session.appname}}/platform/user/level/update" method='post'>
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">用户级别修改</h3>
+        <input type="hidden" name="levelid" value={{ level.levelid }}>
+      </div>
+      <div class="panel-body">
+          {% if msg %}
+          <p style="color: red">{{msg}}</p>
+          {% endif %}
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label">
+              <span style="color: red;">*</span>&nbsp;级别值：
+            </label>
+            <div class="col-sm-5">
+                <input type='text' class='form-control' name='value' value="{{form.value or level.value}}" required >
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label">
+              <span style="color: red;">*</span>&nbsp;级别名称：
+            </label>
+            <div class="col-sm-5">
+                <input type='text' class='form-control' name='name' value="{{form.name or level.name}}" required >
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label">级别别名：</label>
+            <div class="col-sm-5">
+                <input type='text' class='form-control' name='alias' value="{{form.alias or level.alias}}" >
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label"></label>
+            <div class="col-sm-2">
+              <button type="submit" class="btn btn-success btn-block">保存</button>
+            </div>
+          </div>
+
+
+      </div>
+    </div>
+
+    </form>
+
+{% endblock right_content %}

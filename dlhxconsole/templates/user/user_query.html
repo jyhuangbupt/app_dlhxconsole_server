@@ -1,0 +1,136 @@
+{% extends "user/index.html" %} {% block title %}{{ super() }}{% endblock title %} {% block head %} {{ super() }}
+<script type="text/javascript">
+    $(document).ready(function() {
+
+        $('._clickitem').each(function() {
+            $(this).click(function() {
+                var uid = $(this).find('input:first').val();
+                window.location.href = "/{{session.appname}}/platform/user/detail?entry=mine&target_uid=" + uid;
+            });
+        });
+
+        // $('#_left_nav').hide();
+        $('#_user_search2_name').on('change', function() {
+            $('#query-form').submit();
+        });
+        $('._oneusercard').each(function() {
+            var uid = $(this).find('input').first().val();
+            //加点击事件
+            $(this).click(function() {
+                $('#_useropsdiv').find('a.buddy-btn-a').each(function() {
+                    var tmp = $(this).attr('href').split('?');
+                    var href = tmp[0];
+                    var params = '';
+                    if (tmp.length == 2) {
+                        //将target_uid参数截掉
+                        params = tmp[1].split('target_uid')[0];
+                        if (params.endsWith('&')) {
+                            params = params.substring(0, params.length - 1);
+                        }
+                    }
+                    if (params == '') {
+                        params = 'target_uid=' + uid;
+                    } else {
+                        params = params + '&target_uid=' + uid;
+                    }
+                    $(this).attr('href', href + '?' + params);
+                });
+                $('#common-modal').modal('show');
+            });
+            //异步加载团队角色信息
+            var _usercard = $(this);
+            var url = '/{{session.appname}}/user/userteam/query/ajax';
+            ajax(
+                url, {
+                    'uid': uid
+                },
+                function(data) {
+                    var roles = [];
+                    for (var i in data.userteams) {
+                        roles = roles.concat(data.userteams[i].role.name);
+                    }
+                    _usercard.find('div span._userteamroles').first().text(roles.join('，'));
+                },
+                function() {
+                    showtoast('加载失败！' + meta.message, 'red');
+                }
+            );
+        });
+
+
+    });
+</script>
+{% endblock head %} {% block right_content %}
+<h5>
+    {{ '我的直属客户' if form.type=='directly' else '我的相关客户' }}
+</h5> {% if users %}
+<div class='.container-fluid'>
+    <div class='row' style="margin: 0">
+        <div class='col-md-12' style="padding: 0">
+            <form id='query-form' class="form-inline" action="/{{session.appname}}/user/query?target_uid={{session.user.uid}}" method='post'>
+                <div class="form-group">
+
+                    <input type="hidden" id="_user_search2_uid" name="searchuid" value="{{form.target_user.uid if form.target_user else ''}}">
+                    <input type="text" id="_user_search2_name" class="form-control user-search2" value="{{(form.target_user.name or form.target_user.nickname or form.target_user.phone or form.target_user.uid) if form.target_user else ''}}" placeholder="客户名">
+
+                    <input type="hidden" name='next_page' id='next_page' value="{{form.next_page or 1}}" />
+                </div>
+                <button type="submit" class="btn btn-success">查询</button>
+            </form>
+
+        </div>
+    </div>
+    <br> {# 遍历展示用户列表 #}
+    <div clas='row' style='margin-top: 20px;'>
+        <div class='col-md-12' style="padding-left: 0">
+
+            <table class="table table-bordered table-condensed table-hover">
+                <tbody>
+                    {# 遍历展示用户列表 #} {% for user in users %}
+                        {% if user.info %}
+                            <tr>
+                                <td class="_clickitem" style="position: relative; ">
+                                    <input type="hidden" value="{{user.uid}}" />
+                                    <img style="width: 32px; position: absolute; right: 10px; top: 35%; " src="{{ url_for('static', filename='img/right.png') }}" <b><span style="display: block; border: 1px solid #ccc; width: 20px; height: 20px; border-radius: 10px; line-height: 20px; text-align: center; margin-bottom: 5px;">{{loop.index + ((form.next_page or 1) - 1) * 10}}</span></b>
+                                    <img src="{{user.info.avatar}}" style="width: 40px; margin-right: 10px;">
+                                    <span>{{user.info.name or user.info.nickname}} {{(user.info.nickname) if user.info.nickname else ''}}</span><br>
+                                    <b>手机：</b><span>{{user.info.phone}}</span><br>
+                                    <b>用户级别：</b><span>{{levels.get(user.levelid).name if levels.get(user.levelid) else '-'}}</span><br>
+                                    <b>是否关注：</b> {% if user.is_subscribe %}
+                                    <span style="color: green;">已关注</span> {% else %}
+                                    <span style="color: red;">未关注</span> {% endif %}
+                                    <br>
+                                    <b>最近活跃：</b><span>{{user.at_ui[0:16]}}</span>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+            共{{total_pages}}页，共{{total_count}}条
+            <div class=row>
+                <div class='col-md-12'>
+                    <nav>
+                        <ul class="pager">
+                            {% if page > 1 %}
+                            <li><a href="#" id='to_previous_page'>上一页</a></li>
+                            {% endif %}
+                            <li>{{page or 1}}</li>
+                            {% if page
+                            < total_pages %} <li><a href="#" id='to_next_page'>下一页</a></li>
+                                {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% else %}
+<div class="text-center" style="margin-top: 150px; text-align: center;">
+    你还没有管理的用户。
+</div>
+{% endif %}
+
+{% endblock right_content %}

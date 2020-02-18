@@ -1,0 +1,137 @@
+{% extends "platform/index.html" %}
+{% block title %} {{ super() }}{% endblock title %}
+
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" type="text/css" media="screen" href={{ url_for('static', filename='css/bootstrap-datetimepicker.min.css') }} />
+    <script src={{ url_for('static', filename='js/bootstrap-datetimepicker.min.js') }}></script>
+    <script src={{ url_for('static', filename='js/bootstrap-datetimepicker.zh-CN.js') }}></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $('#birthday').datetimepicker({
+                minView: "month", //选择日期后，不会再跳转去选择时分秒
+                format: "yyyy-mm-dd", //选择日期后，文本框显示的日期格式
+                language: 'zh-CN', //汉化
+                endDate : new Date(),
+                todayBtn: true,
+                autoclose:true //选择日期后自动关闭
+            });
+
+            $('.addvip').on('click',function () {
+                var ids = $(this).val()
+                var cardid = ids.split('-')[0]
+                var vipid = ids.split('-')[1]
+                var remain = $('#'+cardid).val()
+                var uid = $('#uid').val()
+                console.log(cardid,remain,uid,vipid)
+                xdock.ajax(
+                "/{{ session.appname }}/platform/user/vip/update",
+                {
+                    'uid': uid,
+                    'cardid':cardid,
+                    'remain': remain,
+                    'vipid': vipid,
+                },
+                function() {
+                    window.location.reload()
+                },
+                function(meta) {
+                    alert(meta.description);
+                }
+            )
+            })
+            $('.deletevip').on('click',function () {
+                var vipid = $(this).val()
+                xdock.ajax(
+                "/{{ session.appname }}/platform/user/vip/delete",
+                {
+                    'vipid': vipid,
+                },
+                function() {
+                    window.location.reload()
+                },
+                function(meta) {
+                    alert(meta.description);
+                }
+            )
+            })
+        });
+    </script>
+    <style type="text/css">
+    .uservip-container{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
+        border-bottom: 1px solid #eee;
+        padding: 12px;
+    }
+    .uservip-name{
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .uservip-num{
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+        align-items: center;
+        font-size: 18px;
+        padding: 12px 0
+    }
+    .uservip-btns{
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+        align-items: center;
+        margin:10px 0;
+
+    }
+    </style>
+{% endblock head %}
+
+{% block right_content %}
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">用户会员卡信息修改</h3>
+      </div>
+      <div class="panel-body">
+      <input  type="hidden" id="uid" value="{{uid}}">
+          {% for vipcard in vipcards %}
+              <div class="uservip-container ">
+                <div class="uservip-name">
+                  <span style="font-size: 24px;font-weight: bold;color:#370307">{{ vipcard.name }}</span>
+                    <span style="margin-left: 30px;">
+                        {% if vipcard.opened %}
+                            <span style="color:green">(已开通)</span>
+                        {% else %}
+                            <span style="color:red">(未开通)</span>
+                        {% endif %}
+                    </span>
+                </div>
+              <div class="uservip-num" >
+                  {% if vipcard.opened %}
+                      <span>剩余份数：</span>
+                  {% else %}
+                      <span>份数：</span>
+                  {% endif %}
+                  <input type="number" id="{{ vipcard.cardid }}" value="{{vipcard.num}}"/>
+              </div>
+              <div class="uservip-btns col-xs-6">
+                  {% if vipcard.opened %}
+                      <button value="{{ vipcard.cardid+'-'+vipcard.vipid }}"  type="button" class="addvip btn btn-default col-xs-2 " style="background: #370307;color:#fff;text-shadow: none">修改</button>
+                      <button value="{{ vipcard.vipid }}" type="button" class="deletevip btn btn-default col-xs-2" style="background: #370307;color:#fff;text-shadow: none">删除</button>
+                  {% else %}
+                      <button value="{{ vipcard.cardid+'-'+vipcard.vipid }}" type="button" class="addvip btn btn-default col-xs-2 " style="background: #370307;color:#fff;text-shadow: none">开通</button>
+                  {% endif %}
+              </div>
+
+              </div>
+
+          {% endfor %}
+      </div>
+    </div>
+
+{% endblock right_content %}

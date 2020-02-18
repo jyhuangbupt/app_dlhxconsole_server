@@ -1,0 +1,95 @@
+{% extends "user/index.html" %}
+{% block title %}{{ super() }}{% endblock title %}
+{% block head %}
+    {{ super() }}
+{% endblock head %}
+
+{% block right_content %}
+   <div class='.container-fluid'>
+        <div class='row' style="margin: 0">
+            <div class='col-md-8' style="padding: 0">
+                <h5>FALY体质分析报告管理</h5>
+                <form  id='query-form' class="form-inline" action="" method='post'>
+                    <input type="hidden" name='next_page' id='next_page' value={{form.next_page or 1}} />
+                  <a class="btn btn-primary" href="/{{session.appname}}/falylog/create?entry=mine&target_uid={{form.target_uid}}">创建报告</a>
+                </form>
+            </div>
+            <div class='col-md-4' style="padding: 0">
+            </div>
+        </div>
+        <div clas='row' style='margin-top: 20px;'>
+            <div class='col-md-12' style="padding-left: 0">
+                <table class="table table-bordered table-condensed table-hover">
+                  <tbody>
+                      {# 遍历展示用户列表 #}
+                      {% for log in falylogs %}
+                          <tr>
+                            <td>
+                              <b><span style="display: block; border: 1px solid #ccc; width: 20px; height: 20px; border-radius: 10px; line-height: 20px; text-align: center;">{{loop.index + ((form.next_page or 1) - 1) * 10}}</span></b><br>
+                              {% if log.isdefault %}
+                                <img  style="position:absolute;display: block;right:25px;width:35px" src="https://images.buddydc.com/rs/faly/1501254869022_735be28673a711e7ae0ca0c589188e1d.png" alt="">
+                              {% endif %}
+                              <img src="{{log.userinfo.avatar}}" style="width: 50px; float: left; margin-right: 10px; " />
+                              <b>姓名：</b>{{log.userinfo.name or log.userinfo.nickname}}（{{log.userinfo.nickname}}）<br>
+                              <b>手机：</b>{{log.userinfo.phone}}<br>
+                              <br>
+                              <b>报告标题：</b>{{log.title}}<br>
+                              <b>审核状态：</b>
+                                {% if log.checkstatus == 'checking' %}
+                                <span style="color: blue;">{{checkstatus.get(log.checkstatus)}}</span>
+                                {% elif log.checkstatus == 'checked' %}
+                                <span style="color: green;">{{checkstatus.get(log.checkstatus)}}</span>
+                                {% else %}
+                                <span style="color: red;">{{checkstatus.get(log.checkstatus)}}</span>
+                                {% endif %}
+                              <br>
+                              <b>报告状态：</b>
+                                {% if log.status == 'editing' %}
+                                <span style="color: red;">{{statuses.get(log.status)}}</span>
+                                {% elif log.status == 'sent' %}
+                                <span style="color: blue;">{{statuses.get(log.status)}}</span>
+                                {% else %}
+                                <span style="color: green;">{{statuses.get(log.status)}}</span>
+                                {% endif %}
+                              <br>
+                              {% if log.checkstatus == 'unchecked' %}
+                                  <a class="confirm-op buddy-btn-a" href={{ '/%s/falylog/checking?entry=mine&logid=%s&name=%s&status=%s&next_page=%s' % (session.appname, log.logid, form.name or '', form.status or '', form.next_page) }}>提交审核</a>
+                              {% elif log.checkstatus == 'checking' %}
+                              <a class="confirm-op buddy-btn-a" href={{ '/%s/falylog/checked?entry=mine&logid=%s&name=%s&status=%s&next_page=%s' % (session.appname, log.logid, form.name or '', form.status or '', form.next_page) }}>审核</a>
+                              {% endif %}
+
+                              {% if log.checkstatus == 'checked' and log.status == 'editing' %}
+                              <a class="confirm-op buddy-btn-a" href={{ '/%s/falylog/send?entry=mine&logid=%s&name=%s&status=%s&next_page=%s' % (session.appname, log.logid, form.name or '', form.status or '', form.next_page) }}>发送</a>
+                              {% endif %}
+
+                              <a class="buddy-btn-a" href={{ '/%s/falylog/preview?entry=mine&logid=%s' % (session.appname, log.logid) }}>预览</a>
+
+                              <a class="buddy-btn-a" href={{ '/%s/falylog/update?entry=mine&logid=%s' % (session.appname, log.logid) }}>修改</a>
+                              {% if not log.isdefault %}
+                              <a class="confirm-op buddy-btn-a" href={{ '/%s/falylog/delete?entry=mine&logid=%s&name=%s&status=%s&next_page=%s' % (session.appname, log.logid, form.name or '', form.status or '', form.next_page) }}>标记删除</a>
+                              {% endif %}
+                            </td>
+                           </tr>
+                      {% endfor %}
+                  </tbody>
+                </table>
+                共{{total_pages}}页，共{{total_count}}条
+                <div class=row>
+                    <div class='col-md-12'>
+                        <nav>
+                          <ul class="pager">
+                            {% if page > 1 %}
+                            <li><a href="#" id='to_previous_page'>上一页</a></li>
+                            {% endif %}
+                            <li>{{page or 1}}</li>
+                            {% if page < total_pages %}
+                            <li><a href="#" id='to_next_page'>下一页</a></li>
+                            {% endif %}
+                          </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock right_content %}

@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}{% endblock title %}
+
+{% block head %}
+    {{ super() }}
+    <style type="text/css">
+        body {background: url("{{bg}}") fixed; background-size: 70%; background-position: -260px 0px; }
+        .avatar {width: 94px; border-radius: 47px;}
+        .avatar-selected {width: 94px; border: 12px solid #9aee23; border-radius: 47px;}
+    </style>
+    <script type="text/javascript">
+        var started = false;
+        var prev_user = null;
+        var allavatars = new Array();
+        $(document).ready(function() {
+            $('.avatar').each(function() {
+                var tmp = $(this).prev().val().split('|');
+                var user = {
+                    'uid': tmp[0],
+                    'name': tmp[1],
+                    'nickname': tmp[2],
+                    'phone': tmp[3],
+                    'avatar': tmp[4]
+                }
+                allavatars.push(user);
+            });
+
+            $('#start').click(function() {
+                started = started ? false:true;
+                console.log('started: ' + started);
+                $(this).text(started ? '停止':'开始');
+                console.log($(this).text());
+
+                if (started) {
+                    start();
+                }
+            });
+        });
+
+        function start() {
+            $('.avatar-selected').each(function() {
+                $(this).removeClass('avatar-selected');
+            });
+            var user = null;
+            while(true) {
+                user = allavatars[Math.floor(Math.random()*allavatars.length)];
+                if (prev_user != null && prev_user.uid == user.uid) {
+                    continue;
+                }
+                break;
+            }
+            $('#'+user.uid).addClass('avatar-selected');
+
+            $('#selected-div').empty();
+            var html = '<img src="' + user.avatar + '" style="width: 15%;" /><p style="font-size: 32px; color: #9aee23">' + user.nickname + '</p>'
+            $('#selected-div').append(html);
+
+            if (started) {
+                setTimeout(start, 50);
+            }
+        }
+
+    </script>
+{% endblock head %}
+
+{% block top %}
+{% endblock top %}
+
+{% block content %}
+
+<div class=".container-fluid">
+    <div style="width: 1080px; height: 100%; margin: 0 auto 0 auto; ">
+        <div id="selected-div" style="height: 230px; margin-top: 30px; text-align: center; ">
+            <p style="font-size: 96px; color: #9aee23;">FALY大奖</p>
+        </div>
+        <div>
+            {% if users|length > 0 %}
+                {% for user in users %}
+                    <div style="width: 94px; margin: 3px 7px; float: left; text-align: center;">
+                        <input type="hidden" value="{{user.uid}}|{{user.name}}|{{user.nickname}}|{{user.phone}}|{{user.avatar}}">
+                        <img class='avatar' id="{{user.uid}}" src="{{user.avatar}}" />
+                    </div>
+                {% endfor %}
+            {% else %}
+            <center><p style="color: gray;">没有签到用户</p></center>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<p id='start' class="btn btn-success" style="position: fixed; top: 10px; right: 10px; border-radius: 50px; width: 100px; height: 100px; box-shadow:2px 2px 10px #000; line-height: 100px; padding: 0">开始</p>
+
+{% endblock content %}

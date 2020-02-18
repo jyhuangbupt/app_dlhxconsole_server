@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}{{title or session.appname_cn}}{% endblock title %}
+
+{% block head %}
+    {{ super() }}
+    <script type="text/javascript">
+
+    </script>
+{% endblock head %}
+
+{% block content %}
+    <div class='.container-fluid'>
+        <div class='row' style='margin-top: 70px; margin-left: 0; margin-right: 0; text-align: center;'>
+            <p style="font-size: 18px; font-weight: bold; height: 60px; line-height: 60px; margin: 0;">
+                一个程序员搞了个BUG
+            </p>
+
+            <p style="font-size: 16px; margin: 0;">
+                <img src="{{ url_for('static', filename='img/500.png')}}" /> <br><br>
+                请截图下来，发给我我们<br><br>
+
+                Code：{{ code }} <br/>
+                Message：{{ message }} <br/>
+                Description：{{ description }}
+
+            </p>
+
+            <p style="font-size: 14px; margin: 20px 0px;">
+                <input type="hidden" id="_redirect_url" value="{{redirect_url}}">
+                <span><a onclick="javascript: history.go(-1);">点击返回</a></span>
+            </p>
+        </div>
+    </div>
+
+{% endblock content %}

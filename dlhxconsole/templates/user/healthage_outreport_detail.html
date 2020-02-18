@@ -1,0 +1,251 @@
+{% extends "user/index.html" %} {% block title %} {{ super() }}{% endblock title %} {% block head %} {{ super() }}
+<script type="text/javascript">
+    $(document).ready(function() {
+        $(document).ready(function() {
+            $('#report_ct').datetimepicker({
+            // 　　minView: "month", //选择日期后，不会再跳转去选择时分秒
+            　　format: "yyyy-mm-dd hh:ii", //选择日期后，文本框显示的日期格式
+            　　language: 'zh-CN', //汉化
+            　　autoclose:true //选择日期后自动关闭
+            });
+        });
+    });
+</script>
+<style type="text/css">
+    .file-preview-frame {
+        display: table;
+        margin: 8px;
+        height: 160px;
+        border: 1px solid #ddd;
+        box-shadow: 1px 1px 5px 0px #a2958a;
+        padding: 6px;
+        float: left;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .file-preview-frame:hover {
+        box-shadow: 3px 3px 5px 0px #333;
+    }
+
+    .file {
+        position: relative;
+        display: inline-block;
+        background: #428bca;
+        border: 1px solid #357ebd;
+        border-radius: 4px;
+        padding: 4px 12px;
+        overflow: hidden;
+        color: #fff;
+        font-size: 15px;
+        text-decoration: none;
+        text-indent: 0;
+        line-height: 20px;
+    }
+    .file input {
+        position: absolute;
+        font-size: 100px;
+        right: 0;
+        top: 0;
+        opacity: 0;
+    }
+    .file:hover {
+        background: #3276b1;
+        border-color: #285e8e;
+        color: #fff;
+        text-decoration: none;
+    }
+
+</style>
+{% endblock head %}
+
+{% block right_content %}
+
+<form class="form-horizontal" action="{{'/%s/healthage/outreport/detail?entry=mine' % session.appname }}" method='post'>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">身体报告详情</h3>
+        </div>
+        <div class="panel-body">
+            {% if msg %}
+            <p id="warningmsg" style="color: red">{{msg}}</p>
+            {% endif %}
+            <div class="form-group">
+                <label class="col-sm-2 control-label" style="padding-top: 0;">所属用户：</label>
+                <div class="col-sm-4">
+                    <input type="hidden" name="userid" value="{{ report.userid }}">
+                    <b class="">{{ report.username }}</b>
+
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-sm-2 control-label" style="padding-top: 0;">报告名称：</label>
+                <div class="col-sm-4">
+                    <input type="hidden" name="reportid" class="form-control" value="{{ report.reportid}}">
+                    <input type="text" name="reportname" class="form-control" value="{{ report.reportname or '' }}">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-sm-2 control-label" style="padding-top: 0;">分类：</label>
+                <div class="col-sm-4">
+                    <select class='form-control' name='part'>
+                        <option value=''>---选择分类---</option>
+                        {% for part in Parts %}
+                            {% if report.part == part %}
+                        <option value="{{part}}" selected>{{part}}</option>
+                            {% else %}
+                        <option value="{{part}}">{{part}}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-sm-2 control-label" style="padding-top: 0;">报告生成时间：</label>
+                <div class="col-sm-4">
+                    <input type="text" id="report_ct" name="report_ct" class="form-control" value="{{ report.report_ct_ui[:-3] or '' }}">
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-xs-offset-3">
+                <button type="submit" id="savebtn" class="btn btn-success">保存</button>
+            </div>
+        </div>
+        <div class="panel-heading">
+            <h3 class="panel-title">身体报告数据</h3>
+        </div>
+        <div class="panel-body">
+            <div id="uploadfile-div" class="form-group">
+                    <div class="file">
+                        <i class="glyphicon glyphicon-folder-open"></i>&nbsp<span>上传图片</span>
+                        <input type="file" id="uploadfile" name="uploadfile" onchange="upload('{{session.appname}}', '{{report.reportid}}', '{{report.userid}}', this.files)" value="">
+                    </div>
+            </div>
+
+            <div class="form-group">
+                {% if imgurls == [] %}
+                <p id="warningtip" style="color: red">您未上传数据图片，请前往修改并上传</p>
+                {% else %}
+                {% for image in reportImage %}
+                    <div class="col-md-3 file-preview-frame">
+                        <img data-toggle="modal" data-target="#imgModal" data-whatever='{"imgurl":"{{image.imgurl}}"}' src="{{image.imgurl}}@!falythumbnail" alt="图片加载失败" >
+                        <div tabindex="-1">
+                            <div image-id="{{ image.imgid }}" app-name="{{session.appname}}" class="kv-file-remove btn btn-xs btn-default" style="float:right">
+                                <i style="font-size:16px" class="glyphicon glyphicon-trash text-danger"></i>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+</form>
+
+<div class="modal fade" id="imgModal" tabindex="-1" role="dialog" aria-labelledby="imgModalLabel">
+    <div class="modal-dialog" style="" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span></button>
+            </div>
+            <div style="width:100%;max-height:700px;overflow:scroll;text-align:center">
+                <img id="view-img" src="" alt="不能显示该项" style="width:100%">
+            </div>
+            <div class="modal-footer" style="text-align: center">
+                <button class="btn btn-default" type="button" id="prev-img">上一张</button>
+                <button class="btn btn-default" type="button" id="next-img">下一张</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+
+$('#imgModal').on('show.bs.modal', function(event) {
+    var imgbtn = $(event.relatedTarget) // 触发事件的按钮
+    var data = imgbtn.data('whatever') // 解析出data-whatever内容
+    var modal = $(this)
+    modal.find("#view-img").attr('src',data.imgurl)
+    $("#next-img").click(function(){
+        if(imgbtn.parent().next().attr("class")=="col-md-3 file-preview-frame"){
+            modal.find("#view-img").attr('src',imgbtn.parent().next().find("img").data("whatever").imgurl)
+            imgbtn = imgbtn.parent().next().find("img")
+        }
+    });
+    $("#prev-img").click(function(){
+        if(imgbtn.parent().prev().attr("class")=="col-md-3 file-preview-frame"){
+            modal.find("#view-img").attr('src',imgbtn.parent().prev().find("img").data("whatever").imgurl)
+            imgbtn = imgbtn.parent().prev().find("img")
+        }
+    })
+});
+
+    function upload(appname, reportid, userid, files) {
+        if (files[0] == undefined) {
+            return
+        }
+        var url = '/' + appname + '/healthage/outreport/file/upload/ajax'
+        var imgDate = files[0].lastModifiedDate
+        var img_ct = imgDate.getFullYear()+'-'+imgDate.getMonth()+'-'+imgDate.getDay()+' '+imgDate.getHours()+':'+imgDate.getMinutes()+':'+imgDate.getSeconds();
+        var formData = new FormData()
+        formData.append("reportid", reportid)
+        formData.append("userid", userid)
+        formData.append("img_ct", img_ct),
+        formData.append("uploadfile", files[0])
+        $.ajax({
+            url: url,
+            data: formData,
+            type: 'post',
+            /**
+             *必须false才会自动加上正确的Content-Type
+             */
+            contentType: false,
+            /**
+             * 必须false才会避开jQuery对 formdata 的默认处理
+             * XMLHttpRequest会对 formdata 进行正确的处理
+             */
+            processData: false,
+            success: function(data) {
+                var btnstr = '<div image-id="'+$.parseJSON(data).imgid+'" app-name="'+appname+'" class="kv-file-remove btn btn-xs btn-default" style="float:right"><i style="font-size:16px" class="glyphicon glyphicon-trash text-danger"></i></div>'
+                $("#uploadfile-div").next().append(
+                    '<div class="col-md-3 file-preview-frame"><img data-toggle="modal" data-target="#imgModal" data-whatever=\'{"imgurl":"'+$.parseJSON(data).imgurl+'"}\' src="'+$.parseJSON(data).thumbnailurl+'" alt="不能显示该项"><div tabindex="-1">'+btnstr+'</div></div>'
+                );
+                // $("#warningmsg").hide();
+                $(".kv-file-remove").bind('click', function(){
+                    var event = $(this)
+                    var url = "/" + $(this).attr('app-name') + "/healthage/outreport/file/delete/ajax"
+                    var data = {
+                        'imgid': $(this).attr('image-id')
+                    }
+                    ajax(url, data, function(data) {
+                        if ($.parseJSON(data).success) {
+                            event.parent().parent().fadeOut('slow', function(){
+                                $(this).remove()
+                            })
+                        }
+                    })
+                });
+            }
+        });
+    };
+
+    $(".kv-file-remove").bind('click', function(){
+        var event = $(this)
+        var url = "/" + $(this).attr('app-name') + "/healthage/outreport/file/delete/ajax"
+        var data = {
+            'imgid': $(this).attr('image-id')
+        }
+        ajax(url, data, function(data) {
+            if ($.parseJSON(data).success) {
+                event.parent().parent().fadeOut('slow', function(){
+                    $(this).remove();
+                })
+            }
+        })
+    });
+</script>
+{% endblock right_content %}

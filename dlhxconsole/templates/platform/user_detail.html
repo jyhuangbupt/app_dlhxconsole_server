@@ -1,0 +1,246 @@
+{% extends "platform/index.html" %} {% block title %} {{ super() }}{% endblock title %} {% block head %} {{ super() }}
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        $("#setActive").click(function () {
+            var url = "/{{session.appname}}/platform/user/setdelete"
+            var uid= $("#uid").val()
+            var data = {
+                'deleted': false,
+                'uid': uid
+            };
+            ajax(url, data, function(data){
+                showtoast('会员标记有效成功');
+                window.location.reload()
+            })
+        });
+        $("#setDeleted").click(function () {
+            var url = "/{{session.appname}}/platform/user/setdelete"
+            var uid= $("#uid").val()
+            var data = {
+                'deleted': true,
+                'uid': uid
+            };
+            ajax(url, data, function(data){
+                showtoast('会员标记无效成功');
+                window.location.reload()
+            })
+        });
+        $("#cancel").click(function () {
+            if (!confirm('确定取消自动配送？')) {
+                    return;
+                }
+            var url = "/{{session.appname}}/order/preorder/cancel"
+            var data = {
+                'uid': {{user.uid}}
+            }
+            ajax(url, data, function(data){
+                showtoast('自动下单取消成功')
+                window.location.reload()
+            })
+        });
+        $("#crm-btn-sub").click(function(){
+            if($("#record").val() == "" || $("#record").val() == undefined){
+                return
+            }
+            var url = "/{{session.appname}}/crm/marketrecord/create/ajax"
+            var data = {
+                "target_uid": "{{user.uid}}",
+                "recorderuid": "{{session.user.uid}}",
+                'content': $("#record").val()
+            }
+            $("#crm-btn-sub").attr("disabled","disabled");
+            ajax(url, data, function(data){
+                var str1 = '<div id="'+data.record.recordid+'" class="row record-div-line"><div class="form-group"><div class="col-sm-6"><img src="'+data.record.recorder.avatar+'" style="width: 40px; margin-right: 10px;"></img><span>'+data.record.recorder.name+'('+data.record.recorder.nickname+')</span></div>'
+                var str2 = '<div class="col-sm-9" style="margin-top:5px"><span style="font-size:14px">'+data.record.content+'</span><br><span style="color:#999">编辑于：'+data.record.ct_ui+'</span>&nbsp<br><a class="buddy-btn-a" style="" onclick="rmrecord(\''+data.record.recordid+'\')" href="#">删除</a></div></div></div>'
+                $("#record-div").prepend(str1+str2);
+                $(".simditor-body").text("");
+                $(".simditor-placeholder").css("display", "block");
+                $("#crm-btn-sub").removeAttr("disabled");
+                $("#toggle-tip").click();
+            })
+        });
+
+        new Simditor({
+            textarea: $('#record'),
+            toolbar: ['bold', 'italic', 'fontScale', 'underline', 'strikethrough', 'color', '|', 'ol', 'ul', 'blockquote', 'code', 'table', '|', 'link', 'image', '|', 'hr', 'indent', 'outdent', 'alignment'],
+            upload: {
+                url: '/{{session.appname}}/resource/image/simditor/upload/ajax',
+                fileKey: 'image-file',
+                params: {'tag': 'FALYCRM'},
+                leaveConfirm: '正在上传图片中，确定离开当前页面？'
+            },
+            pasteImage: true,
+            autosave: 'editor-content'
+        });
+        $("#toggle-tip").click(function(){
+            switch ($(this).attr('data-value')) {
+                case "0":
+                    $("#toggle-record").show();
+                    $(this).text("点我关闭");
+                    $(this).attr("data-value","1")
+                    break;
+                case "1":
+                    $("#toggle-record").hide();
+                    $(this).text("点我创建");
+                    $(this).attr("data-value","0")
+                    break;
+            }
+        })
+    });
+
+    function rmrecord(recordid){
+        if (recordid=='' || recordid == undefined){
+            return
+        }
+        var url = "/{{session.appname}}/crm/marketrecord/delete/ajax"
+        var data = {
+            'recordid': recordid
+        }
+        ajax(url, data, function(data){
+            if(data.status == 'ok'){
+                showtoast(data.msg)
+                $("#"+recordid).fadeOut('slow', function(){
+                    $(this).remove()
+                });
+            }
+        })
+    }
+
+    function _user_unbind(thirdtype, target_uid) {
+        if (!confirm('确定执行该操作？')) {
+            return;
+        }
+        var url = "{{'/%s/platform/user/ajax/thirdaccount/unbind' % session.appname}}";
+        var data = {'thirdtype': thirdtype, 'target_uid': target_uid}
+        ajax(url, data, function() {
+            window.location.reload();
+        });
+    }
+</script>
+<style type="text/css">
+    .record-div-line {
+        border-bottom: 1px solid #d3d3d3;
+        margin-top:10px;
+        margin-bottom:10px
+    }
+    .toggle-tip {
+        text-decoration: none;
+        border: 1px solid #dddddd;
+        border-radius: 5px;
+        background: #03a9f4;
+        color: #fff;
+        cursor: pointer;
+        position: absolute;
+        right: 5px
+    }
+</style>
+{% endblock head %}
+{% block right_content %}
+
+{% macro renzheng(_type, _typename, value=None) %}
+    {% if _type !='weixin' %}
+        <div class="form-group">
+            <label class="col-sm-3 control-label" style="padding-top: 0;">{{ _typename }}
+                {% if value %}
+                    <img style="width:20px;" src="https://static.buddydc.com/faly/img/success.png" >
+                {% else %}
+                    <img style="width:20px;" src="https://static.buddydc.com/faly/img/failure.png" >
+                {% endif %}
+            </label>
+            <div class="col-sm-3">
+                {{ value or '未认证' }}
+            </div>
+            {% if _type !='phone' %}
+                 <div class="col-xs-2">
+                    <img style="width:20px;" src="{{url_for('static', filename='img/failure.png')}}" onclick='javascript: _user_unbind("{{ _type }}", "{{ user.uid }}")'>
+                 </div>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endmacro %}
+
+<div class='.container-fluid'>
+    <div class='row' style="margin: 0">
+        <input id="uid" hidden value="{{ user.uid or "" }}"/>
+        <div class="panel panel-info">
+            <div class="panel-heading" style="position: relative;">用户基本信息</div>
+            <div class="panel-body">
+                <form class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label" style="padding-top: 0;"></label>
+                        <div class="col-sm-6">
+                            <img src="{{user.avatar}}" style="width: 40px; margin-right: 10px;"> UID：{{user.uid}}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label" style="padding-top: 0;"></label>
+                        <div class="col-sm-6">
+                            {{user.name}}{{'（%s）' % user.nickname if user.nickname else ''}} &nbsp;&nbsp;
+{#                            <span style="color: gray; font-size: 16px; ">{{levels.get(user.levelid).name if levels.get(user.levelid) else '-'}}</span>#}
+                        </div>
+                    </div>
+                    {% for tat in ThirdAccountType.keys() %}
+                        {% if tat not in ['userid'] %}
+                            {% if tat in userconfig.weixin_mp_account.keys() %}
+                                {% set typename = ThirdAccountType[tat] + '（微信公众号）' %}
+                            {% elif tat in userconfig.weixin_app_account.keys() %}
+                                {% set typename = ThirdAccountType[tat] + '（微信APP）' %}
+                            {% elif tat in userconfig.weixin_miniapp_account.keys() %}
+                                {% set typename = ThirdAccountType[tat] + '（小程序）' %}
+                            {% else %}
+                                {% set typename = ThirdAccountType[tat] %}
+                            {% endif %}
+
+                            {% if tat in third_accounts.keys() %}
+                                {{ renzheng(tat, typename, value=third_accounts[tat]) }}
+                            {% else %}
+                                {{ renzheng(tat, typename) }}
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                    <b>备注：</b><span>{{user.note or '无'}}</span><br>
+                   {% for vip in user.vips %}
+                       <b>{{ vip.name }}：</b><span>剩余{{vip.num}}份</span><br>
+                    {% endfor %}
+                    {% if user.is_deleted == 'true' %}
+                        <b>会员是否有效：</b><span style="color:red">无效会员</span><br>
+                    {% else %}
+                        <b>会员是否有效：</b><span style="color:green">有效会员</span><br>
+                    {% endif %}
+                    {% if user.haspreorder %}
+                        <b>自动配送：</b>
+                        <span style="color:green">
+                            每月{{user.preorder.pre_time}}号
+                            {% if user.preorder.status == 'ondeliver'  %}
+                                (配送中)
+                            {% elif user.preorder.status == 'finished' %}
+                                (已完成)
+                            {% else %}
+                                (已取消)
+                            {% endif %}
+                        </span><br>
+                    {% else %}
+                        <b>自动配送：</b><span style="color: red">未指定</span><br>
+                    {% endif %}
+                    <div class="form-group">
+                        <div class="col-sm-9">
+                            <a class="buddy-btn-a" href="/{{session.appname}}/platform/user/update?target_uid={{user.uid}}">基本信息修改</a>
+                            <a class="buddy-btn-a" href="/{{session.appname}}/platform/user/vip/query?uid={{user.uid}}">会员卡信息修改</a>
+                            {% if user.haspreorder and user.preorder.status == 'ondeliver'  %}
+                                <a class="buddy-btn-a" id="cancel">取消自动配送</a>
+                            {% endif %}
+                            {% if user.is_deleted == 'true' %}
+                                <a class="buddy-btn-a" value="{{ user.uid }}" id="setActive">标记会员有效</a>
+                            {% else %}
+                                <a class="buddy-btn-a" value="{{ user.uid }}" id="setDeleted">标记会员无效</a>
+                            {% endif %}
+{#                            <a class="buddy-btn-a" href="/{{session.appname}}/medicalshop/order/query?business=medicalshop&target_uid={{user.uid}}">订单</a>#}
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock right_content %}

@@ -1,0 +1,64 @@
+{% extends "platform/index.html" %}
+{% block title %} {{ super() }}{% endblock title %}
+
+{% block head %}
+    {{ super() }}
+    <script type="text/javascript">
+        $(document).ready(function() {
+
+        });
+    </script>
+    <style type="text/css">
+    </style>
+{% endblock head %}
+
+{% block right_content %}
+    <form class="form-horizontal" action="/{{session.appname}}/serviceteam/role/update" method='post'>
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">角色修改</h3>
+      </div>
+      <div class="panel-body">
+          {% if msg %}
+          <p style="color: red">{{msg}}</p>
+          {% endif %}
+          <input type="hidden" name="roleid" value="{{form.roleid or role.roleid}}">
+          <div class="form-group">
+            <label class="col-sm-2 control-label">
+                <span style="color: red;">*</span>&nbsp;排序值：
+            </label>
+            <div class="col-sm-5">
+                <input type='text' class='form-control' name='value' value="{{form.value or role.value}}" required >
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label">
+              <span style="color: red;">*</span>&nbsp;角色编号：
+            </label>
+            <div class="col-sm-5">
+                <input type='text' class='form-control' name='roleno' value="{{form.roleno or role.roleno}}" required >
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label">
+              <span style="color: red;">*</span>&nbsp;角色名称：
+            </label>
+            <div class="col-sm-5">
+                <input type='text' class='form-control' name='name' value="{{form.name or role.name}}" required >
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label"></label>
+            <div class="col-sm-2">
+              <button type="submit" class="btn btn-success btn-block">保存</button>
+            </div>
+          </div>
+
+      </div>
+    </div>
+
+    </form>
+
+{% endblock right_content %}

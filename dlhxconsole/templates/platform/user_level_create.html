@@ -1,0 +1,76 @@
+{% extends "platform/index.html" %}
+{% block title %} {{ super() }}{% endblock title %}
+
+{% block head %}
+    {{ super() }}
+    <script type="text/javascript">
+        $(document).ready(function() {
+
+        });
+    </script>
+    <style type="text/css">
+    </style>
+{% endblock head %}
+
+{% block right_content %}
+    <form id="create-form" class="form-horizontal" action="/{{session.appname}}/platform/user/level/create" method='post'>
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">用户级别创建</h3>
+      </div>
+      <div class="panel-body">
+          {% if msg %}
+          <p style="color: red">{{msg}}</p>
+          {% endif %}
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label">
+              <span style="color: red;">*</span>&nbsp;级别值：
+            </label>
+            <div class="col-sm-5">
+                <input type='text' class='form-control' id="levelvalue" name='value' value="{{form.value or ''}}" placeholder="0-100内的整数" required >
+                <span class="help-block" style="color: #d69529;">请填写0-100以内的整数！值越高则级别越高，创建用户时默认为最低级别！</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label">
+              <span style="color: red;">*</span>&nbsp;级别名称：
+            </label>
+            <div class="col-sm-5">
+                <input type='text' class='form-control' id="levelname" name='name' value="{{form.name or ''}}" placeholder="级别名称" required ><br>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label">级别别名：</label>
+            <div class="col-sm-5">
+                <input type='text' class='form-control' name='alias' value="{{form.alias or ''}}" placeholder="别名" >
+                <span class="help-block">当多个级别对外要使用一个名字时，可以填相同的别名，主要在手机端展示使用。可以不填，默认为名字。</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label"></label>
+            <div class="col-sm-2">
+               <button id="savebtn" class="btn btn-success btn-block">创建</button>
+            </div>
+          </div>
+
+      </div>
+    </div>
+
+    </form>
+<script type="text/javascript">
+    $("#savebtn").click(function(){
+        var reg = new RegExp('^[0-9]{1,2}[0-9]?$')
+        if($("#levelvalue").val()=='' || $("#levelname").val()==''){
+            return
+        }
+        if(reg.test($("#levelvalue").val()) && $("#levelvalue").val()<=100){
+            $("#create-form").submit()
+        }else{
+            $("#numberwarning").show()
+        }
+    })
+</script>
+{% endblock right_content %}

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}{{title or session.appname_cn}}{% endblock title %}
+
+{% block head %}
+    {{ super() }}
+    <script type="text/javascript">
+        var max_second = 10;
+        var pass_second = 0
+        $(document).ready(function() {
+            setTimeout(changeseconds, 1000);
+        });
+
+        function changeseconds() {
+            if (pass_second >= max_second) {
+                window.location = $('#_redirect_url').val();
+            }
+            $('#second').text(max_second - pass_second);
+            pass_second = pass_second + 1
+            setTimeout(changeseconds, 1000)
+        }
+
+    </script>
+{% endblock head %}
+
+{% block content %}
+    <div class='.container-fluid'>
+        <div class='row' style='margin-top: 70px; margin-left: 0; margin-right: 0; text-align: center;'>
+            <p style="font-size: 18px; font-weight: bold; height: 60px; line-height: 60px; margin: 0;">
+                {{message}}
+                {% if type == 'success' %}
+                <img src="https://static.buddydc.com/faly/img/success.png" style="margin: 10px 0;">
+                {% elif type == 'warning' %}
+                <img src="https://static.buddydc.com/faly/img/warn.png" style="margin: 10px 0;">
+                {% else %}
+                <img src="https://static.buddydc.com/faly/img/error.png" style="margin: 10px 0;">
+                {% endif %}
+            </p>
+
+            {% if description %}
+            <p style="font-size: 16px; margin: 0;">
+                {% if type == 'success' %}
+                <span style="color: #777">{{description}}</span>
+                {% elif type == 'warning' %}
+                <span style="color: #8a6d3b">{{description}}</span>
+                {% else %}
+                <span style="color: #a94442;">{{description}}</span>
+                {% endif %}
+            </p>
+            {% endif %}
+
+            {% if redirect_url %}
+            <p style="font-size: 14px; margin: 20px 0px;">
+                <input type="hidden" id="_redirect_url" value="{{redirect_url}}">
+                <span><a href="{{redirect_url}}">点击跳转</a></span>
+                ，
+                <span>页面将在<e id="second" style="color: green;"></e>秒内自动跳转！</span>
+            </p>
+            {% endif %}
+        </div>
+    </div>
+
+{% endblock content %}

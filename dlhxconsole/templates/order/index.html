@@ -1,0 +1,23 @@
+{% extends "base_2.html" %}
+{% block title %}{{ super() }}{% endblock title %}
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" type="text/css" href={{ url_for('static', filename='css/simditor.css') }}/>
+    <link rel="stylesheet" type="text/css" href={{ url_for('static', filename='css/xdock.simditor.css') }}/>
+    <script src={{ url_for('static', filename='js/module.js') }}></script>
+    <script src={{ url_for('static', filename = 'js/hotkeys.js') }}></script>
+    <script src={{ url_for('static', filename='js/uploader.js') }}></script>
+    <script src={{ url_for('static', filename = 'js/simditor.js') }}></script>
+    <script src={{ url_for('static', filename='js/simditor-dropzone.js') }}></script>
+    <script src={{ url_for('static', filename = 'js/jquery.ajaxfileupload.js') }}></script>
+    <script src={{ url_for('static', filename = 'js/xheditor.js') }}></script>
+    <script src={{ url_for('static', filename = 'js/xheditor_lang/zh-cn.js') }}></script>
+{% endblock head %}
+
+{% block left_content %}
+    <div class="list-group">
+        <a class="list-group-item active" href="#">订单管理</a>
+        <a class="list-group-item" href="/{{session.appname}}/order/query">订单列表</a>
+        <a class="list-group-item" href="/{{session.appname}}/order/excel/upload">批量更新订单</a>
+    </div>
+{% endblock left_content%}

@@ -1,0 +1,73 @@
+{% extends "platform/index.html" %}
+{% block title %}{{ super() }}{% endblock title %}
+{% block head %}
+    {{ super() }}
+    <script type="text/javascript">
+        $(document).ready(function() {
+
+        });
+
+        function _getmenus() {
+            //获取最新的公众号菜单
+            var url = '/{{session.appname}}/platform/weixinmp/menus/get/ajax';
+            showloading();
+            ajax(
+                url,
+                {},
+                function(data) {
+                    hideloading();
+                    editor.set(data.menus);
+                },
+                function(meta) {
+                    hideloading();
+                    showtoast('获取公众号菜单失败！！！', 'red');
+                }
+            );
+        }
+
+        function _setmenus(menus) {
+            //更新公众号菜单
+            var url = '/{{session.appname}}/platform/weixinmp/menus/set/ajax';
+            showloading();
+            ajax(
+                url,
+                {'menus': JSON.stringify(menus)},
+                function(data) {
+                    hideloading();
+                    showtoast('保存成功！');
+                },
+                function(meta) {
+                    hideloading();
+                    showtoast('获取公众号菜单失败！！！', 'red');
+                }
+            )
+        }
+
+    </script>
+{% endblock head %}
+
+{% block right_content %}
+<table class="table table-striped">
+    <caption style="padding: 20px;"><h3>公众号查询列表</h3></caption>
+    <thead style="background-color: #ffffff">
+    <th>#</th>
+    <th>公众号名称</th>
+    <th>原始ID</th>
+    <th>APPID</th>
+    <th>操作</th>
+    </thead>
+    <tbody>
+    {% for k, v in weixinmp.iteritems() %}
+        <tr style="background-color: #F5F8F9;cursor: pointer;">
+            <td>{{ loop.index }}</td>
+            <td>{{ v.name }}</td>
+            <td>{{ v.originid }}</td>
+            <td>{{ v.appid }}</td>
+            <td>
+                <a href="{{ '/%s/platform/weixinmp/menus/update?thirdtype=%s' % (session.appname, k) }}" style="color: orange;text-decoration:none;">设置菜单</a>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock right_content %}

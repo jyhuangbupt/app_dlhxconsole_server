@@ -1,0 +1,99 @@
+{% extends "user/index.html" %} {% block title %} {{ super() }}{% endblock title %} {% block head %} {{ super() }}
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('#report_ct').datetimepicker({
+        // 　　minView: "month", //选择日期后，不会再跳转去选择时分秒
+        　　format: "yyyy-mm-dd hh:ii", //选择日期后，文本框显示的日期格式
+        　　language: 'zh-CN', //汉化
+        　　autoclose:true //选择日期后自动关闭
+        });
+    });
+</script>
+<style type="text/css">
+
+</style>
+{% endblock head %} {% block right_content %}
+<form class="form-horizontal" action="{{'/%s/healthage/outreport/create?entry=mine' % session.appname }}" method='post'>
+    <!-- <input type="hidden" name="target_uid" value=""> -->
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">身体报告创建</h3>
+        </div>
+        <div class="panel-body">
+            {% if msg %}
+            <p style="color: red">{{msg}}</p>
+            {% endif %}
+            <div class="form-group">
+                <label class="col-sm-2 control-label" style="padding-top: 0;">所属用户：</label>
+                <div class="col-sm-4">
+                    <input type="hidden" name="userid" value="{{ form.user.uid or '' }}">
+                    <input type="text" id="searchname" class="form-control" value="{{form.user.name or form.user.nickname or form.user.phone or form.user.uid or ''}}" readonly placeholder="用户名">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label" style="padding-top: 0;">报告名称</label>
+                <div class="col-sm-4">
+                    <input type="text" name="reportname" class="form-control" value="{{ form.reportname or '' }}">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-sm-2 control-label" style="padding-top: 0;">分类</label>
+                <div class="col-sm-4">
+                    <select class='form-control' name='part'>
+                        <option value=''>---选择分类---</option>
+                        {% for part in Parts %}
+                            {% if form.part == part %}
+                        <option value="{{part}}" selected>{{part}}</option>
+                            {% else %}
+                        <option value="{{part}}">{{part}}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-sm-2 control-label" style="padding-top: 0;">报告生成时间</label>
+                <div class="col-sm-4">
+                    <input type="text" id="report_ct" name="report_ct" class="form-control" value="{{ form.report_ct or '' }}">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-sm-2 control-label"></label>
+                <div class="col-sm-2">
+                    <button type="submit" class="btn btn-success btn-block">保存</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</form>
+
+<script type="text/javascript">
+    var url = "";
+    function a(id){
+        alert($("#"+id).val())
+        // ajax(url, $(this).val(), function(data) {
+        //     // 0：编号重复  1：成功  2：必填字段为空
+        //     if (data == '0') {
+        //         $('#repeatwarning').show();
+        //         return
+        //     } else {
+        //         $('#CategoryModal').hide()
+        //         setTimeout("$('#CategoryModal').show()", 500)
+        //         $('#templateform').hide()
+        //         modal.find('#CategoryModalLabel').text('提示')
+        //         if (data == '1') {
+        //             modal.find('#contentdiv').html('<h4 style="text-align:center">保存成功！</h4>')
+        //         } else if (data == '2') {
+        //             modal.find('#contentdiv').html("<h4 style='text-align:center;color:red'>分类编号、分类名称为必填字段！</h4>")
+        //         }
+        //     }
+        //     setTimeout("window.location.reload()", 1500)
+        // });
+    }
+</script>
+{% endblock right_content %}

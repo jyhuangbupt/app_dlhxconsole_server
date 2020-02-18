@@ -1,0 +1,64 @@
+{% extends "platform/index.html" %}
+{% block title %} {{ super() }}{% endblock title %}
+
+{% block head %}
+    {{ super() }}
+    <script type="text/javascript">
+        $(document).ready(function() {
+
+        });
+    </script>
+    <style type="text/css">
+    </style>
+{% endblock head %}
+
+{% block right_content %}
+    <form class="form-horizontal" action="/{{session.appname}}/platform/staff/role/create" method='post'>
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">角色创建</h3>
+      </div>
+      <div class="panel-body">
+          {% if msg %}
+          <p style="color: red">{{msg}}</p>
+          {% endif %}
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label">
+              <span style="color: red;">*</span>&nbsp;角色编号：
+            </label>
+            <div class="col-sm-5">
+                <input type='text' class='form-control' name='roleno' value="{{form.roleno or ''}}" required >
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label">
+              <span style="color: red;">*</span>&nbsp;角色名称：
+            </label>
+            <div class="col-sm-5">
+                <input type='text' class='form-control' name='name' value="{{form.name or ''}}" required >
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label">角色简介：</label>
+            <div class="col-sm-5">
+                <textarea class='form-control' name='abstract' rows=5>{{form.abstract or ''}}</textarea>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label"></label>
+            <div class="col-sm-2">
+              <button type="submit" class="btn btn-success btn-block">创建</button>
+            </div>
+          </div>
+
+      </div>
+    </div>
+
+    </form>
+
+{% endblock right_content %}

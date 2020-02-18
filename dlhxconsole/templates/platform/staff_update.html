@@ -1,0 +1,176 @@
+{% extends "platform/index.html" %}
+{% block title %} {{ super() }}{% endblock title %}
+
+{% block head %}
+    {{ super() }}
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $('#_topnavbar').css('position', 'absolute');
+
+            new Simditor({
+                textarea: $('#_staff_introduction'),
+                toolbar: ['bold', 'italic', 'fontScale', 'underline', 'strikethrough', 'color', '|', 'ol', 'ul', 'blockquote', 'code', 'table', '|', 'link', 'image', '|', 'hr', 'indent', 'outdent', 'alignment'],
+                upload: {
+                    url: '/{{session.appname}}/resource/image/simditor/upload/ajax',
+                    fileKey: 'image-file',
+                    params: {'tag': '员工管理'},
+                    leaveConfirm: '正在上传图片中，确定离开当前页面？'
+                },
+                pasteImage: true,
+                autosave: 'editor-content'
+            });
+            {##}
+
+            //异步上传文件
+            $('#_uploadfile_btn').click(function() {
+                $('#uploadfile').click();
+            });
+            $('#uploadfile').AjaxFileUpload({
+                action: '/{{session.appname}}/resource/image/simditor/upload/ajax',
+                onChange: function(filename) {
+                    showloading();
+                },
+                onComplete: function(filename, data) {
+                    hideloading();
+                    if (data.success == true) {
+                        $('#_uploadfile_value').val(data.file_path);
+                        $('#_uploadfile_preview').attr('src', data.file_path);
+                        showtoast(data.msg);
+                    } else {
+                        showtoast(data.msg);
+                    }
+                },
+            });
+        });
+    </script>
+    <style type="text/css">
+    .org-select{
+        border-radius: 2px;
+        text-align: center;
+        text-decoration: none;
+        cursor: pointer;
+        border: 0;
+        padding: 5px 15px 6px;
+        color: #FFF;
+    }
+
+    .label-custom {
+        font-weight: normal;
+        font-size: 14px;
+        color: #000000;
+        border: 1px solid #ddd;
+        display: inline-block;
+        margin:3px;
+    }
+    </style>
+{% endblock head %}
+
+{% block right_content %}
+    <form class="form-horizontal" action="/{{session.appname}}/platform/staff/update?target_uid={{staff.uid}}" method='post'>
+
+    <input type='hidden' name='target_uid' value="{{staff.uid}}"
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">员工修改</h3>
+      </div>
+      <div class="panel-body">
+          {% if msg %}
+          <p style="color: red">{{msg}}</p>
+          {% endif %}
+
+          <div class="form-group">
+              <label class="col-sm-2 control-label" style="padding-top: 0;">员工：</label>
+              <div class="col-sm-5">
+                  <p><img src="{{staff.user.avatar}}" style="width: 40px; margin-right: 5px;">{{staff.user.name}}&nbsp({{staff.user.nickname or ''}})</p>
+              </div>
+          </div>
+          <div id="org-select-dev" style="display:none" class="form-group">
+              <label class="col-sm-2 control-label" style="padding-top: 0;"></label>
+              <div class="col-sm-5" style="border:2px solid #edd28b;max-height:200px;overflow-y:scroll;">
+                {% for org in orgs %}
+                    {% if org.orgid in orgownids %}
+                        <input type="checkbox" name="orgs" value="{{ org.orgid }}" data-org-name="{{org.orgname}}" checked>{{ org.orgname }}<br>
+                    {% else %}
+                        <input type="checkbox" name="orgs" value="{{ org.orgid }}" data-org-name="{{org.orgname}}">{{ org.orgname }}<br>
+                    {% endif %}
+                {% endfor %}
+                <div class="sl-btns" style="text-align:center;padding-bottom:2px">
+                    <a class="btn btn-primary org-select" id="org-select-confirm" style="background-color:#E74649" href="javascript:;">确定</a>
+                    <a class="btn btn-default org-select" id="org-select-cancel" style="border:1px solid #f1f1f1;color:#000" href="javascript:;"> 取消</a>
+                </div>
+              </div><br>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label">
+              <span style="color: red;">*</span>&nbsp;角色：
+            </label>
+            <div class="col-sm-5">
+                {% for role in roles %}
+                <div class="checkbox">
+                  <label>
+                    {% if role.roleid in staff.roleids %}
+                    <input type='checkbox' name='roleids' value="{{role.roleid}}" checked>{{loop.index}}.&nbsp;{{role.name}}
+                    {% else %}
+                    <input type='checkbox' name='roleids' value="{{role.roleid}}">{{loop.index}}.&nbsp;{{role.name}}
+                    {% endif %}
+                  </label>
+                </div>
+                {% endfor %}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label">
+              <span style="color: red;">*</span>&nbsp;岗位：
+            </label>
+            <div class="col-sm-5">
+                {% for post in posts %}
+                <div class="checkbox">
+                  <label>
+                    {% if post.postid in staff.postids %}
+                    <input type='checkbox' name='postids' value="{{post.postid}}" checked>{{loop.index}}.&nbsp;{{post.name}}
+                    {% else %}
+                    <input type='checkbox' name='postids' value="{{post.postid}}">{{loop.index}}.&nbsp;{{post.name}}
+                    {% endif %}
+                  </label>
+                </div>
+                {% endfor %}
+            </div>
+          </div>
+{#          <div class="form-group">#}
+{#            <label class="col-sm-2 control-label" style="padding-top: 0;">形象头像：</label>#}
+{#            <div class="col-sm-5" style="position: relative;">#}
+{#                <div class="input-group">#}
+{#                  <input type="text" class="form-control" name="photo" id='_uploadfile_value' value="{{form.photo or staff.photo}}" />#}
+{#                  <span class="input-group-btn">#}
+{#                    <button class="btn btn-success" type="button" id='_uploadfile_btn'>+</button>#}
+{#                    <input style="opacity: 0;" type='file' id="uploadfile" name='image-file' accept="image/jpeg,image/png">#}
+{#                  </span>#}
+{#                </div>#}
+{#                <img style="width: 200px;" id='_uploadfile_preview' src="{{form.photo or staff.photo}}" />#}
+{#            </div>#}
+{#          </div>#}
+
+{#          <div class="form-group">#}
+{#            <label class="col-sm-2 control-label" style="padding-top: 0;">员工介绍：</label>#}
+{#            <div class="col-sm-5">#}
+{#                <div style="min-width: 375px; max-width: 414px;">#}
+{#                  <textarea id='_staff_introduction' name='introduction' placeholder="员工履历介绍">{{form.introduction or staff.introduction}}</textarea>#}
+{#                </div>#}
+{#            </div>#}
+{#          </div>#}
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label"></label>
+            <div class="col-sm-2">
+              <button type="submit" class="btn btn-success btn-block">保存</button>
+            </div>
+          </div>
+
+      </div>
+    </div>
+
+    </form>
+{% endblock right_content %}

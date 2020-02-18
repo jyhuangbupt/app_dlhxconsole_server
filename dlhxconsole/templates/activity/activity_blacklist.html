@@ -1,0 +1,93 @@
+{% extends "activity/index.html" %}
+{% block title %} {{ super() }}{% endblock title %}
+
+{% block head %}
+    {{ super() }}
+    <script type="text/javascript">
+        $(document).ready(function () {
+           $('.collocation-publish').click(function() {
+                if (!confirm('确定删除黑名单吗？')) {
+                    return;
+                }
+                var uid = $(this).find('input:first').val();
+                showloading();
+                xdock.ajax(
+                    "/{{session.appname}}/activity/blacklist/delete",
+                    {'uid': uid },
+                    function(data) {
+                        hideloading();
+                        showtoast('删除成功');
+                        window.location.reload()
+                    },
+                    function(meta) {
+                        hideloading();
+                        alert(meta.description);
+                    }
+                )
+            });
+           $('.function').each(function () {
+               $(this).click(function () {
+                   event.stopPropagation();
+               })
+           })
+        });
+    </script>
+    <style type="text/css">
+    </style>
+{% endblock head %}
+{% block right_content %}
+    <ul class="nav nav-tabs" style="margin-bottom: 30px;margin-top: 20px">
+      <li role="presentation" class="active"><a href="{{'/%s/activity/blacklist/query' % (session.appname)}}">活动黑名单</a></li>
+    </ul>
+    <div class='.container-fluid'>
+        <div class='row' style="margin: 0">
+            <div class='col-md-12' style="padding: 0">
+                <form id='query-form' class="form-inline" action="/{{ session.appname }}/activity/blacklist/add"
+                      method='post'>
+                    <div class="form-group">
+                        <input class="form-control" name='phone' id='phone' placeholder="会员手机号"/>
+                    </div>
+                    <button type="submit" class="btn btn-success">添加</button>
+                </form>
+            </div>
+        </div>
+        <div class='row' style='margin-top: 20px;width: 450px;'>
+            <div class='col-md-12' style="">
+                    {% for user in users %}
+                        <div id="user-{{user.uid}}" class='card container-vertical-top item-click' style="align-items: flex-start; padding: 10px 0;overflow: hidden;position: relative">
+                            <div style="display: flex;flex-direction: row;justify-content: flex-start">
+                                <img style="width: 50px;height: 50px;" src="{{ user.info.avatar }}"/>
+                                <div style="line-height: 40px; margin-left: 15px;display: flex;flex-direction: column;justify-content: space-around">
+                                    <h4>{{ user.name }}</h4>
+                                </div>
+                            </div>
+                            <div class="function" style="position: absolute; right: 5px; bottom: 5px;">
+                                <span  class="icon-circle collocation-publish" style="margin-left: 5px;width: 60px" >
+                                    <input type="hidden" value="{{user.uid}}" />
+                                    <span>删除</span>
+                                </span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                <br>
+                <br>
+                共{{ total_pages }}页，共{{ total_count }}条
+                <div class=row>
+                    <div class='col-md-12'>
+                        <nav>
+                            <ul class="pager">
+                                {% if page > 1 %}
+                                    <li><a href="#" id='to_previous_page'>上一页</a></li>
+                                {% endif %}
+                                <li>{{ page or 1 }}</li>
+                                {% if page < total_pages %}
+                                    <li><a href="#" id='to_next_page'>下一页</a></li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock right_content %}

@@ -1,0 +1,195 @@
+{% extends "platform/index.html" %}
+{% block title %} {{ super() }}{% endblock title %}
+
+{% block head %}
+    {{ super() }}
+    <script type="text/javascript">
+        $(document).ready(function () {
+           $('.collocation-delete').each(function() {
+                $(this).click(function() {
+                    var productid = $(this).find('input:first').val();
+                    if (!confirm('确定删除吗？')) {
+                        return;
+                    }
+                    showloading();
+                    xdock.ajax(
+                        "/{{session.appname}}/platform/product/delete/ajax",
+                        {'productid': productid },
+                        function(data) {
+                            hideloading();
+                            showtoast('删除成功！');
+                            $('#product-'+productid).hide();
+                        },
+                        function(meta) {
+                            hideloading();
+                            alert(meta.description);
+                        }
+                    )
+                });
+            });
+           $('.collocation-publish').click(function() {
+                if (!confirm('确定发布吗？')) {
+                    return;
+                }
+                var productid = $(this).find('input:first').val();
+                showloading();
+                xdock.ajax(
+                    "/{{session.appname}}/platform/product/publish/ajax",
+                    {'productid': productid },
+                    function(data) {
+                        hideloading();
+                        showtoast('发布成功');
+                        location.reload()
+                    },
+                    function(meta) {
+                        hideloading();
+                        alert(meta.description);
+                    }
+                )
+            });
+           $('.collocation-offset').click(function() {
+                if (!confirm('确定下架吗？')) {
+                    return;
+                }
+                var productid = $(this).find('input:first').val();
+                showloading();
+                xdock.ajax(
+                    "/{{session.appname}}/platform/product/offset/ajax",
+                    {'productid': productid },
+                    function(data) {
+                        hideloading();
+                        showtoast('操作成功');
+                        location.reload()
+                    },
+                    function(meta) {
+                        hideloading();
+                        alert(meta.description);
+                    }
+                )
+            });
+           $('.collocation-stick').click(function() {
+                var productid = $(this).find('input:first').val();
+                showloading();
+                xdock.ajax(
+                    "/{{session.appname}}/platform/product/stick/ajax",
+                    {'productid': productid },
+                    function(data) {
+                        hideloading();
+                        showtoast('操作成功');
+                        location.reload()
+                    },
+                    function(meta) {
+                        hideloading();
+                        alert(meta.description);
+                    }
+                )
+            });
+           $('.function').each(function () {
+               $(this).click(function () {
+                   event.stopPropagation();
+               })
+           })
+        });
+    </script>
+    <style type="text/css">
+    </style>
+{% endblock head %}
+{% block right_content %}
+    <ul class="nav nav-tabs" style="margin-bottom: 30px;margin-top: 20px">
+      <li role="presentation" class="active"><a href="{{'/%s/platform/product/query' % (session.appname)}}">产品列表</a></li>
+    </ul>
+    <div class='.container-fluid'>
+{#        <div class='row' style="margin: 0">#}
+{#            <div class='col-md-12' style="padding: 0">#}
+{#                <form id='query-form' class="form-inline" action="/{{ session.appname }}/platform/product/query"#}
+{#                      method='post'>#}
+{#                    <div class="form-group">#}
+{#                        <select class="form-control" name='status'>#}
+{#                            <option value="">---状态---</option>#}
+{#                            {% for k,v in  ProductStatus.iteritems() %}#}
+{#                                {% if form.status == k %}#}
+{#                                    <option value="{{ k }}" selected>{{ v }}</option>#}
+{#                                {% else %}#}
+{#                                    <option value="{{ k }}">{{ v }}</option>#}
+{#                                {% endif %}#}
+{#                            {% endfor %}#}
+{#                        </select>#}
+{#                        <input type="hidden" name='next_page' id='next_page' value="{{ form.next_page or 1 }}"/>#}
+{#                    </div>#}
+{#                    <button type="submit" class="btn btn-success">查询</button>#}
+{#                    <a class="btn btn-default" href="/{{ session.appname }}/platform/product/query">新增产品</a>#}
+{#                </form>#}
+{#            </div>#}
+{#        </div>#}
+        <div class='row' style='margin-top: 20px;width: 450px;'>
+            <div class='col-md-12' style="">
+                    {# 遍历展示用户列表 #}
+                    {% for product in products %}
+                        <div id="product-{{product.productid}}" class='card container-vertical-top item-click' style="align-items: flex-start; padding: 10px 0;overflow: hidden;position: relative">
+                            <input type="hidden" value="/{{session.appname}}/platform/product/update?productid={{product.productid}}" />
+                            {% if product.status == 'published' %}
+                            <div class="badge-banner" style="right: -30px; top: 10px; width: 100px;  background-color: #5cb85c; color: white;">已发布</div>
+                            {% endif %}
+                            <div style="display: flex;flex-direction: row;justify-content: flex-start">
+                                <img style="width: 50px;height: 50px;" src="{{ product.cover }}"/>
+                                <div style="line-height: 40px; margin-left: 15px;display: flex;flex-direction: column;justify-content: space-around">
+                                    <h4>{{ product.name }}</h4>
+                                    <h5>编号：{{product.product_num}}</h5>
+                                </div>
+                            </div>
+                            <div>
+                                <p style="color: #777;">
+                                    更新于&nbsp;{{product.ut_ui[0:16]}}
+                                </p>
+                            </div>
+                            <div class="function" style="position: absolute; right: 5px; bottom: 5px;">
+                                <span class="icon-circle collocation-stick" style="margin-left: 5px;" >
+                                    <input type="hidden" value="{{product.productid}}" />
+                                    <span>置顶</span>
+                                </span>
+                                <span class="icon-circle item-click" style="margin-left: 5px;" >
+                                    <input type="hidden" value="/{{session.appname}}/platform/product/update?productid={{product.productid}}" />
+{#                                    <i class="iconfont">&#xe63a;</i>#}
+                                    <span>修改</span>
+                                </span>
+                                {% if product.status=='published' %}
+                                <span class="icon-circle collocation-offset" style="margin-left: 5px;" >
+                                    <input type="hidden" value="{{product.productid}}" />
+                                    <span>下架</span>
+                                </span>
+                                {% else %}
+                                <span class="icon-circle collocation-publish" style="margin-left: 5px;" >
+                                    <input type="hidden" value="{{product.productid}}" />
+{#                                    <i class="iconfont">&#xe6a0;</i>#}
+                                    <span>发布</span>
+                                </span>
+                                {% endif %}
+{#                                <span  class="icon-circle collocation-delete" style="margin-left: 5px;" >#}
+{#                                    <input type="hidden" value="{{product.productid}}" />#}
+{#                                    <span>删除</span>#}
+{#                                </span>#}
+                            </div>
+                        </div>
+                    {% endfor %}
+                <br>
+                <br>
+                共{{ total_pages }}页，共{{ total_count }}条
+                <div class=row>
+                    <div class='col-md-12'>
+                        <nav>
+                            <ul class="pager">
+                                {% if page > 1 %}
+                                    <li><a href="#" id='to_previous_page'>上一页</a></li>
+                                {% endif %}
+                                <li>{{ page or 1 }}</li>
+                                {% if page < total_pages %}
+                                    <li><a href="#" id='to_next_page'>下一页</a></li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock right_content %}

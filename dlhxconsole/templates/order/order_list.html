@@ -1,0 +1,279 @@
+{% extends "order/index.html" %}
+{% block title %}{{ super() }}{% endblock title %}
+{% block head %}
+    {{ super() }}
+    <script type="text/javascript">
+        $(document).ready(function () {
+           $('#order-export').click(function() {
+                showloading();
+                var status = $('#status').val()
+                var type = $('#type').val()
+                var phone = $('#phone').val()
+                var startdate = $('#startdate').val()
+                var enddate = $('#enddate').val()
+                var next_page = $('#next_page').val()
+               var href = '/{{ session.appname }}/order/excel/export?status='+status+'&type='+type+'&phone='+phone+'&startdate='+startdate+'&enddate='+enddate+'&next_page='+next_page;
+               $('#export').attr('href',href);
+               $('#export')[0].click()
+               setTimeout(function () {
+                   hideloading();
+               },2000)
+            });
+           $('.cancelorder').click(function () {
+               if(confirm('确定取消订单？取消后不可恢复')){
+                   var orderid = $(this).val();
+                   console.log(orderid);
+                   var url = "/{{session.appname}}/order/order/cancel"
+                   var data = {
+                       'orderid': orderid
+                   }
+                    ajax(url, data, function(data){
+                        showtoast('订单取消成功，对应产品已回滚')
+                        window.location.reload()
+                    })
+               }
+           });
+           $('.function').each(function () {
+               $(this).click(function () {
+                   event.stopPropagation();
+               })
+           })
+        });
+
+    </script>
+    <style type="text/css">
+    .order-container{
+        width: 120%;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        border:1px solid #eee;
+        border-radius: 10px;
+        padding: 12px;
+        margin-bottom: 20px;
+        background: #eee;
+        color:#fff;
+    }
+    .order-left,.order-right{
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        width: 45%;
+    }
+    .order-sun-container{
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+        align-items: center;
+        width: 100%;
+        flex-wrap: wrap;
+        padding: 5px 0;
+    }
+    .order-label{
+        font-size: 16px;
+        color: #808080;
+        font-weight: 300;
+    }
+    .order-value{
+        font-size: 16px;
+        color: #370307;
+        font-weight: 300;
+    }
+    </style>
+{% endblock head %}
+{% block left_content %}
+     <div class="list-group">
+         <a class="list-group-item active" style="background: #370307;color:#fff;border: none" href="#">订单</a>
+         <a class="list-group-item" href="{{'/%s/order/query' % session.appname}}">订单列表</a>
+         <a class="list-group-item" href="{{'/%s/order/excel/upload' % session.appname}}">批量更新</a>
+         <a class="list-group-item" href="{{'/%s/order/starttime' % session.appname}}">管理下单时间</a>
+
+     </div>
+{% endblock left_content%}
+{% block right_content %}
+    <div class='.container-fluid'>
+        <div class='row' style="margin: 0">
+            <div class='col-md-12' style="padding: 0">
+                <form id='query-form' class="form-inline" action="/{{ session.appname }}/order/query"
+                      method='post'>
+                    <div class="form-group">
+                        <select class="form-control" id="status" name='status'>
+                            <option value="">--订单状态--</option>
+                            {% for k,v in  OrderStatus.iteritems() %}
+                                {% if form.status == k %}
+                                    <option value="{{ k }}" selected>{{ v }}</option>
+                                {% else %}
+                                    <option value="{{ k }}">{{ v }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                        <select class="form-control" id="type" name='type'>
+                            {% if form.type=="auto" %}
+                                <option value="">--下单类型--</option>
+                                <option value="auto" selected>自动下单</option>
+                                <option value="byuser">手动下单</option>
+                            {% elif form.type=="byuser" %}
+                                <option value="">--下单类型--</option>
+                                <option value="auto">自动下单</option>
+                                <option value="byuser" selected>手动下单</option>
+                            {% else %}
+                                <option value="">--下单类型--</option>
+                                <option value="auto">自动下单</option>
+                                <option value="byuser">手动下单</option>
+                            {% endif %}
+                        </select>
+                        <input class="form-control" id="phone" name="phone" type="phone" placeholder="会员手机号" />
+                        <input class="form-control" id="startdate" name="startdate" type="text" placeholder="开始时间2019-06-20" />
+                        <input class="form-control" id="enddate" name="enddate" type="text" placeholder="结束时间2019-06-20" />
+                        <input class="form-control" type="hidden" name='next_page' id='next_page' value="{{ form.next_page or 1 }}"/>
+                    </div>
+                    <button type="submit" class="btn btn-default" style="background: #370307;color:#fff;text-shadow: none;">查询</button>
+                    <button type="button" id="order-export" class="btn btn-default">导出订单</button>
+                    <a style="display: none" id="export" class="btn btn-default">导出订单</a>
+                </form>
+            </div>
+        </div>
+
+        <div class='row' style='margin-top: 20px;width: 100%'>
+            <div class='col-md-12' style="">
+                    {# 遍历订单 #}
+                {% for order in orders %}
+                    <div class="order-container">
+                        <div class="order-left">
+                            <div class="order-sun-container">
+                                <div class="order-label">
+                                    收货姓名&电话：
+                                </div>
+                                <div class="order-value">
+                                    {{ order.shouhuo_name+'  '+order.shouhuo_phone }}
+                                </div>
+                            </div>
+                            <div class="order-sun-container">
+                                <div class="order-label">
+                                    收货时间：
+                                </div>
+                                <div class="order-value">
+                                    {{ order.shouhuo_time_ui[0:10] }}
+                                </div>
+                            </div>
+                            <div class="order-sun-container">
+                                <div class="order-label">
+                                    收货地址：
+                                </div>
+                                {% if order.shouhuo_address.district %}
+                                    <div class="order-value">
+                                        {{ (order.shouhuo_address.district.province or '') +(order.shouhuo_address.district.city or '')+(order.shouhuo_address.district.area or '')+(order.shouhuo_address.district.town or '')+(order.shouhuo_address.address or '') }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="order-sun-container">
+                                <div class="order-label">
+                                    产品及份数：
+                                </div>
+                                <div class="order-value">
+                                    {% for p in order.products %}
+                                        {{ p.name+'*'+p.count|string +'份;' }}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="order-sun-container">
+                                <div class="order-label">
+                                    下单类型：
+                                </div>
+                                <div class="order-value">
+                                    {% if order.type=='auto' %}
+                                        自动下单
+                                    {% else  %}
+                                        手动下单
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="order-sun-container">
+                                <div class="order-label">
+                                    备注：
+                                </div>
+                                <div class="order-value">
+                                    {{order.note or '无'}}
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="order-right">
+                            <div class="order-sun-container">
+                                <div class="order-label">
+                                    订单号：
+                                </div>
+                                <div class="order-value">
+                                    {{ order.orderid }}
+                                </div>
+                            </div>
+                            <div class="order-sun-container">
+                                <div class="order-label">
+                                    下单时间：
+                                </div>
+                                <div class="order-value">
+                                    {{ order.ct_ui }}
+                                </div>
+                            </div>
+                            <div class="order-sun-container">
+                                <div class="order-label">
+                                    订单名称：
+                                </div>
+                                <div class="order-value">
+                                    {{ order.order_name }}
+                                </div>
+                            </div>
+                            <div class="order-sun-container">
+                                <div class="order-label">
+                                    订单状态：
+                                </div>
+                                <div class="order-value">
+                                    {{ OrderStatus[order.status] }}
+                                </div>
+                            </div>
+                            <div class="order-sun-container">
+                                <div class="order-label">
+                                    会员信息：
+                                </div>
+                                <div class="order-value">
+                                    {{ (order.user.name or order.user.nickname) +' '+order.user.phone  }}
+                                </div>
+                            </div>
+                            <div class="order-sun-container">
+                                <div class="order-label">
+                                    快递单号：
+                                </div>
+                                <div class="order-value">
+                                    {{ order.wuliu_number or '未上传' }}
+                                </div>
+                            </div>
+                            {% if order.status==OrderStatus.wait_to_send %}
+                                <button value="{{order.orderid}}" style="background: #370307;color:#fff;text-shadow: none;" class="btn btn-default cancelorder">取消订单</button>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+                <br>
+                <br>
+                共{{ total_pages }}页，共{{ total_count }}条
+                <div class=row>
+                    <div class='col-md-12'>
+                        <nav>
+                            <ul class="pager">
+                                {% if page > 1 %}
+                                    <li><a href="#" id='to_previous_page'>上一页</a></li>
+                                {% endif %}
+                                <li>{{ page or 1 }}</li>
+                                {% if page < total_pages %}
+                                    <li><a href="#" id='to_next_page'>下一页</a></li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock right_content %}

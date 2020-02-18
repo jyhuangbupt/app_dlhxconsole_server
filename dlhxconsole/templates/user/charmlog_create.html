@@ -1,0 +1,118 @@
+{% extends "user/index.html" %} {% block title %} {{ super() }}{% endblock title %} {% block head %} {{ super() }}
+<script type="text/javascript">
+    $(document).ready(function() {
+    });
+</script>
+<style type="text/css">
+</style>
+{% endblock head %} {% block right_content %}
+
+<form class="form-horizontal" action="/{{session.appname}}/charmlog/create?entry=mine" method='post'>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">FALY魅力管理日记创建</h3>
+        </div>
+
+        <div class="panel-body">
+            {% if msg %}
+            <p style="color: red">{{msg}}</p>
+            {% endif %}
+
+            <div class="form-group">
+                <label class="col-sm-2 control-label">日记名称</label>
+                <div class="col-sm-5">
+                    <input type='text' class='form-control' name='title' value="{{form.title or ''}}" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-sm-2 control-label" style="padding-top: 0;">FALY用户</label>
+                <div class="col-sm-5">
+                    <input type="hidden" id="target_user_id" name="target_uid" value="{{form.uid or ''}}" required>
+                    <input class="form-control" type="text" name='name' value="{{form.name or ''}}" placeholder="姓名/昵称/手机号/ID" readonly>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-sm-2 control-label">操作项目</label>
+                <div class="col-sm-5">
+                    <input type='text' class='form-control' name='project' value="{{form.project or ''}}" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-sm-2 control-label">服务门店</label>
+                <div class="col-sm-5">
+                    <select class='form-control' name='orgid' required>
+                      <option value=''>---选择门店---</option>
+                      {% for k, v in orgdict.items() %}
+                        {% if form.orgid == k %}
+                        <option value="{{k}}" selected>{{v}}</option>
+                        {% else %}
+                        <option value="{{k}}">{{v}}</option>
+                        {% endif %}
+                      {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-sm-2 control-label">服务顾问</label>
+                <div class="col-sm-5">
+                    <input type="hidden" id="target_user_id" name="counseloruid" value="{{form.counseloruid or ''}}">
+                    <input class="form-control user-search2" type="text" name='counselor' value="{{form.counselor or ''}}" placeholder="姓名/昵称/手机号/ID" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-sm-2 control-label">背景</label>
+                <div class="col-sm-5" style="position: relative;">
+                    <div class="input-group">
+                      <input type="text" class="form-control" name="background" value="{{form.background or ''}}" />
+                      <span class="input-group-btn">
+                        <button class="btn btn-success buddy_uploadimage_btn" type="button" >+</button>
+                        <input class="buddy_uploadimage_input" style="opacity: 0;" type='file' name='image-file' accept="image/jpeg,image/png">
+                      </span>
+                    </div>
+                    <img style="width: 200px;" src="{{form.background or ''}}" />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-sm-2 control-label" style="padding-top: 0;">日记简介</label>
+                <div class="col-sm-5">
+                    <textarea id='_charmlog_before' name='detail' class="form-control" style="width:100%" rows="5" placeholder="日记简介">{{form.detail or ''}}</textarea>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-sm-2 control-label"></label>
+                <div class="col-sm-2">
+                    <button type="submit" class="btn btn-success btn-block">保存</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</form>
+
+<div id="team-search-dev" class="container-fluid" style="position: fixed; top: 0; left: 0; z-index: 1000; width: 100%; height: 100%; background:rgba(0, 0, 0, 0.8); display: none;">
+    <div class='.container-fluid' style="width: 90%; height: 80%; overflow-y:scroll;margin-top: 5%; margin-left: 5%; background-color: #fafafa; padding: 10px;">
+        <div class='row'>
+            <div class='col-md-8'>
+                <form id='query-form' class="form-inline" method='post'>
+                    <div class="form-group">
+                        <!-- <input id="team-search-name" type="text" class="form-control" placeholder="团队名称" name='name'> -->
+                        <button type="button" id="team-search-submit" style="display:none" class="btn btn-success">查询</button>
+                        <button type="button" id="team-search-cancel" class="btn btn-success">取消</button>
+                        <button type="button" id="team-search-clear" class="btn btn-success">清空</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div id="team-search-list" class='row' style='margin-top: 20px;'></div>
+    </div>
+</div>
+
+{% endblock right_content %}

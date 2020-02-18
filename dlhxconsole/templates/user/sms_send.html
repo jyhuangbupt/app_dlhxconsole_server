@@ -1,0 +1,135 @@
+{% extends "user/index.html" %} {% block title %} {{ super() }}{% endblock title %} {% block head %} {{ super() }}
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('#templateid').change(function() {
+            var templateid = $(this).val();
+            var sms = $('#template_id_' + templateid).text().split('==>')[1];
+            console.log(templateid);
+            console.log(sms);
+
+            $('#_smstext_yulan').text(sms);
+
+            var args_length = sms.split('%s').length - 1;
+
+            $('#args-div').empty();
+
+            for (var i=0; i<args_length; i++) {
+                var html = '<div class="form-group">' +
+                                '<label class="col-sm-2 control-label">参数' + (i+1) + '：</label>' +
+                                '<div class="col-sm-5">' +
+                                    '<input class="form-control args" type="text" value="" name="arg' + i + '" />' +
+                                '</div>' +
+                            '</div>'
+                $('#args-div').append(html);
+            }
+
+            $('.args').each(function() {
+                $(this).change(function() {
+                    refresh_yulan();
+                })
+            })
+        })
+    });
+
+    function refresh_yulan() {
+        var templateid = $('#templateid').val();
+        var sms = $('#template_id_' + templateid).text().split('==>')[1];
+        console.log(sms);
+        var args = []
+        $('.args').each(function() {
+            args.push($(this).val());
+        });
+        console.log(args)
+        var temp = sms.split('%s');
+        console.log(temp);
+        var smstext = '';
+        for (var i = 0; i < temp.length - 1; i++) {
+            smstext = smstext + temp[i] + args[i];
+        }
+        smstext = smstext + temp[temp.length - 1]
+        console.log(smstext);
+        $('#_smstext_yulan').text(smstext);
+    }
+</script>
+
+
+{% endblock head %} {% block right_content %}
+<div class='.container-fluid'>
+    <div class='row' style='margin-left: 0; margin-right: 0;'>
+
+        {% if msg %}
+        <p class="bg-danger" style="height: 30px; line-height: 30px; padding: 0 10px;">{{msg}}</p>
+        {% endif %}
+
+
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h3 class="panel-title">发送短信</h3>
+            </div>
+            <div class="panel-body">
+                <form class="form-horizontal" action="{{ '/%s/utils/sms/send?entry=mine' % (session.appname) }}" enctype="multipart/form-data" method='post'>
+
+                    <input type="hidden" name='target_uid' value="{{target_user.uid}}">
+
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">短信模板：</label>
+                        <div class="col-sm-5">
+                            <select class="col-sm-2 form-control" id='templateid' name='templateid'>
+                                <option value="">---选择---</option>
+                                <!-- 遍历信息模板 -->
+                                {% for t in templates %}
+                                <option id="template_id_{{t.templateid}}" value="{{t.templateid}}">{{t.name}}==>{{t.sms_template}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+
+                        <div class="form-group ">
+                            <label class="col-sm-2 control-label ">预览：</label>
+                            <div class="col-sm-5 ">
+                                <span id="_smstext_yulan" class="text-success "></span><br><br>
+                                <span class="text-warning ">（<span id="_smstext_limit "></span>不能超过70字）</span>
+                            </div>
+                        </div>
+
+
+                        <div class="form-group ">
+                            <label class="col-sm-2 control-label ">手机号：</label>
+                            <div class="col-sm-5 ">
+                                {{target_user.phone}}
+                            </div>
+                        </div>
+
+                        <div id='args-div'>
+
+                        </div>
+
+                        <div class="form-group ">
+                            <label class="col-sm-2 control-label "></label>
+                            <div class="col-sm-5 ">
+                                <button type="submit " class="btn btn-success confirm-op ">发送</button>
+                            </div>
+                        </div>
+
+                    </form>
+
+                </div>
+
+
+                <div class="panel-heading ">发送短信记录（最近30条）</div>
+                <div class="panel-body ">
+                    {% for sms in smses %}
+                    {{sms.ct_ui}}&nbsp;&nbsp;&nbsp;&nbsp;{{sms.content}}<br>
+                    <span class="help-block ">&nbsp;&nbsp;&nbsp;&nbsp;发送者：{{sms.sender.name or sms.sender.nickname if sms.sender else '无'}}</span>
+                    {#  <p><span style="color: #30b4eb; ">{{bill.ct_ui[:-3]}}</span><br>{{billstatuses.get(bill.status)}}，变动 <span class='buddy-currency'>{{bill.amount/100}}</span>, 余额 <span class='buddy-currency'>{{bill.amount_remaining/100}}</span>，{{billcategories.get(bill.category)}}{{'-%s' % bill.note if bill.note else ''}}</p> #}
+                    {% endfor %}
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+{% endblock right_content %}

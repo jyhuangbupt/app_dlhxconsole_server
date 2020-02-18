@@ -1,0 +1,256 @@
+{% extends "user/index.html" %} {% block title %} {{ super() }}{% endblock title %} {% block head %} {{ super() }}
+
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('#_topnavbar').css('position', 'absolute');
+
+        new Simditor({
+            textarea: $('#_falylog_detail'),
+            toolbar: ['bold', 'italic', 'fontScale', 'underline', 'strikethrough', 'color', '|', 'ol', 'ul', 'blockquote', 'code', 'table', '|', 'link', 'image', '|', 'hr', 'indent', 'outdent', 'alignment'],
+            upload: {
+                url: '/{{session.appname}}/resource/image/simditor/upload/ajax',
+                fileKey: 'image-file',
+                params: {
+                    'tag': 'FALY体质分析报告模板'
+                },
+                leaveConfirm: '正在上传图片中，确定离开当前页面？'
+            },
+            pasteImage: true,
+            autosave: 'editor-content'
+        });
+
+        $('#cover').change(function() {
+            $(this).next().attr('src', $(this).val());
+        });
+        $('#background').change(function() {
+            $(this).next().attr('src', $(this).val());
+        });
+
+        $('.team-search').each(function() {
+            $(this).click(function() {
+                window._team_search_name = $(this);
+                window._team_search_teamid = window._team_search_name.prev();
+                window._team_search_left = document.body.scrollLeft;
+                window._team_search_top = document.body.scrollTop;
+
+                if($("#target_user_id").val() == '' || $("#target_user_id").val() == undefined){
+                    alert('请先选择用户！')
+                    return
+                }
+                //展示搜索框
+                $('#team-search-dev').show();
+                // $('#team-search-name').focus();
+                $('#team-search-submit').click();
+            });
+        });
+        $('#team-search-cancel').click(function() {
+            $('#team-search-dev').hide();
+        });
+        $('#team-search-clear').click(function() {
+            window._team_search_name.val('');
+            window._team_search_teamid.val('');
+            $('#team-search-dev').hide();
+            window._team_search_name.change();
+        });
+        $('#team-search-submit').click(function(e) {
+            e.preventDefault()
+            //删除上次查询记录
+            $('#team-search-list').empty();
+
+            var url = "/{{session.appname}}/serviceteam/ownteam/query/ajax"
+            var data = {
+                'uid': $("#target_user_id").val()
+            }
+            ajax(url, data, function(data) {
+                if(!data.usts){
+                    $('#team-search-list').append('<h3 style="text-align:center">该用户未设置团队，请先前往对其进行设置！</h3>');
+                }
+                for (var k in data) {
+                    for (var i in data.usts) {
+                        //构造一个可点击的用户对象
+                        var team = data.usts[i].team;
+                        var logourl = ''
+                        if(team.logourl){
+                            logourl = team.logourl
+                        }
+                        var _oneteamdom = $('' +
+                            '<div class="list-group">' +
+                            '<input type="hidden" value="' + team.teamid + '|' + team.name + '" />' +
+                            '<a href="#" class="list-group-item">' +
+                            '<img src="'+ logourl +'" style="border-radius:50%;width: 50px; margin-right: 10px;"><br>' +
+                            '<h5 class="list-group-item-heading">团队名称：' + team.name + '</h5>' +
+                            '<p class="list-group-item-text">团队标语：' + team.slogan + '</p>' +
+                            '</a>' +
+                            '</div>')
+                        _oneteamdom.click(function(e) {
+                            //此处必须阻止事件传递，不然窗口会默认滚动当前界面到该被点击的元素位置。
+                            e.preventDefault();
+                            var tmp = $(this).find('input').first().val();
+                            var teamid = tmp.split('|')[0];
+                            var name = tmp.split('|')[1];
+                            window._team_search_name.val(name);
+                            window._team_search_teamid.val(teamid);
+                            $('#team-search-dev').hide();
+                            window._team_search_name.focus();
+                            //滚动到原来位置
+                            window.scrollTo(window._team_search_left, window._team_search_top);
+                            window._team_search_name.change();
+                        });
+                        $('#team-search-list').append(_oneteamdom);
+                    }
+                }
+            });
+        });
+
+    });
+</script>
+<style type="text/css">
+</style>
+{% endblock head %} {% block right_content %}
+<form class="form-horizontal" action="/{{session.appname}}/falylog/create?entry=mine" method='post'>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">FALY体质分析报告创建</h3>
+        </div>
+        <div class="panel-body">
+            {% if msg %}
+            <p style="color: red">{{msg}}</p>
+            {% endif %}
+
+            {#<div class="form-group">
+                <label class="col-sm-2 control-label">报告编号</label>
+                <div class="col-sm-5">
+                    <b>{{falylog.reportno}}</b>
+                </div>
+            </div>#}
+
+            <div class="form-group">
+                <label class="col-sm-2 control-label">报告行头</label>
+                <div class="col-sm-5">
+                    <select class="form-control" placeholder="报告行头" name='header'>
+                    <option value=''>---选择行头---</option>
+                    {% for k, v in headers.iteritems() %}
+                        {% if form.header == k%}
+                    <option value={{k}} selected='selected'>{{v}}</option>
+                        {% else %}
+                    <option value={{k}} selected='selected'>{{v}}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-sm-2 control-label">报告标题</label>
+                <div class="col-sm-5">
+                    <input type='text' class='form-control' name='title' value="{{form.title or ''}}" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-sm-2 control-label" style="padding-top: 0;">FALY用户</label>
+                <div class="col-sm-5">
+                    <input type="hidden" id="target_user_id" name="uid" value="{{form.uid or ''}}">
+                    <input class="form-control" type="text" name='name' value="{{form.name or ''}}" placeholder="姓名/昵称/手机号/ID" readonly >
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-sm-2 control-label">专属团队</label>
+                <div class="col-sm-5">
+                    <input type="hidden" id="teamid" name="teamid" value="{{ form.teamid or mainteam.teamid or ''}}">
+                    <input type="text" class="form-control team-search" name="teamname" value="{{ form.teamname or mainteam.name or '' }}" placeholder="团队名称"><br>
+                    <p class='text-danger'>提示：若不填写该字段，则保存时系统默认为该用户的主团队，若该用户未设置主团队，则为空！</p>
+                </div>
+            </div>
+
+            <!-- <div class="form-group">
+                <label class="col-sm-2 control-label">封面</label>
+                <div class="col-sm-5">
+                    <input type='text' class='form-control' id='cover' name='cover' value="{{form.cover}}">
+                    <img style="max-height: 100px;" src="{{form.cover}}" />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-sm-2 control-label">背景</label>
+                <div class="col-sm-5">
+                    <input type='text' class='form-control' id='background' name='background' value="{{form.background}}">
+                    <img style="max-height: 100px;" src="{{form.background}}" />
+                </div>
+            </div> -->
+            {#
+            <div class="form-group">
+                <label class="col-sm-2 control-label" style="padding-top: 0;">健康指数</label>
+                <div class="col-sm-5">
+                    <input class="form-control" type="number" name="healthindex" value="{{ form.healthindex | safe or ''}}">
+                </div>
+            </div>
+            #}
+            <div class="form-group">
+                <label class="col-sm-2 control-label" style="padding-top: 0;">报告详情</label>
+                <div class="col-sm-5">
+                    <textarea id='_falylog_detail' name='detail' placeholder="报告详情">{{form.detail or ''}}</textarea>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-sm-2 control-label" style="padding-top: 0;">补充意见</label>
+                <div class="col-sm-5">
+                    <textarea class="form-control" rows="5" name='suggestion' placeholder="补充意见">{{form.suggestion or ''}}</textarea>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-sm-2 control-label">分店顾问</label>
+                <div class="col-sm-5">
+                    <input type='text' class='form-control' name='counselorb' value="{{form.counselorb or ''}}" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-sm-2 control-label">分店店长</label>
+                <div class="col-sm-5">
+                    <input type='text' class='form-control' name='counselorc' value="{{form.counselorc or ''}}" required>
+                </div>
+            </div>
+            {#
+            <div class="form-group">
+                <label class="col-sm-2 control-label">FALY专家团队</label>
+                <div class="col-sm-5">
+                    <input type='text' class='form-control' name='counselord' value="{{form.counselord or ''}}" required>
+                </div>
+            </div>
+            #}
+            <div class="form-group">
+                <label class="col-sm-2 control-label"></label>
+                <div class="col-sm-2">
+                    <button type="submit" class="btn btn-success btn-block">保存</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</form>
+
+<div id="team-search-dev" class="container-fluid" style="position: fixed; top: 0; left: 0; z-index: 1000; width: 100%; height: 100%; background:rgba(0, 0, 0, 0.8); display: none;">
+    <div class='.container-fluid' style="width: 90%; height: 80%; overflow-y:scroll;margin-top: 5%; margin-left: 5%; background-color: #fafafa; padding: 10px;">
+        <div class='row'>
+            <div class='col-md-8'>
+                <form id='query-form' class="form-inline" method='post'>
+                    <div class="form-group">
+                        <!-- <input id="team-search-name" type="text" class="form-control" placeholder="团队名称" name='name'> -->
+                        <button type="button" id="team-search-submit" style="display:none" class="btn btn-success">查询</button>
+                        <button type="button" id="team-search-cancel" class="btn btn-success">取消</button>
+                        <button type="button" id="team-search-clear" class="btn btn-success">清空</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div id="team-search-list" class='row' style='margin-top: 20px;'></div>
+    </div>
+</div>
+
+{% endblock right_content %}

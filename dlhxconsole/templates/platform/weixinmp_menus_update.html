@@ -1,0 +1,90 @@
+{% extends "platform/index.html" %}
+{% block title %}{{ super() }}{% endblock title %}
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" type="text/css" media="screen" href="{{url_for('static', filename='css/jsoneditor.min.css')}}">
+    <script src={{ url_for('static', filename='js/jsoneditor.min.js') }} ></script>
+    <script type="text/javascript">
+
+        //json编辑器对象
+        var editor = null;
+        $(document).ready(function() {
+            // create the editor
+            var container = document.getElementById("jsoneditor");
+            var options = {
+                mode: 'code',
+                modes: ['code', 'view'], // allowed modes
+                onError: function (err) {
+                    alert('JSON格式错误：' + err.toString());
+                },
+                onModeChange: function (newMode, oldMode) {
+                    console.log('Mode switched from', oldMode, 'to', newMode);
+                }
+            };
+
+            editor = new JSONEditor(container, options);
+
+            $('.savebutton').each(function() {
+                $(this).click(function() {
+                    try {
+                        var menus = editor.get();
+                        _setmenus(menus);
+                    } catch (error) {
+                        alert('JSON格式错误：' + error);
+                    }
+
+                })
+            });
+
+            _getmenus();
+        });
+
+        function _getmenus() {
+            //获取最新的公众号菜单
+            var url = '/{{session.appname}}/platform/weixinmp/menus/get/ajax';
+            showloading();
+            ajax(
+                url,
+                {'thirdtype': '{{ thirdtype }}'},
+                function(data) {
+                    hideloading();
+                    editor.set(data.menus);
+                },
+                function(meta) {
+                    hideloading();
+                    showtoast('获取公众号菜单失败！！！', 'red');
+                }
+            );
+        }
+
+        function _setmenus(menus) {
+            //更新公众号菜单
+            var url = '/{{session.appname}}/platform/weixinmp/menus/set/ajax';
+            showloading();
+            ajax(
+                url,
+                {'menus': JSON.stringify(menus), 'thirdtype': '{{ thirdtype }}'},
+                function(data) {
+                    hideloading();
+                    showtoast('保存成功！');
+                },
+                function(meta) {
+                    hideloading();
+                    showtoast('获取公众号菜单失败！！！', 'red');
+                }
+            )
+        }
+
+    </script>
+{% endblock head %}
+
+{% block right_content %}
+
+<center><h4>微信公众号菜单维护</h4></center>
+
+<span class="alert">注意：键值必须为字符串，不允许有多余的标点。</span>
+<div id="jsoneditor" style="width: 600px; height: 600px;"></div><br>
+
+<button class="btn btn-success savebutton">保存</button>
+
+{% endblock right_content %}

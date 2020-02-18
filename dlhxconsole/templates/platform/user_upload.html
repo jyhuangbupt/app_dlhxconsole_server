@@ -1,0 +1,58 @@
+{% extends "platform/index.html" %}
+{% block title %}{{ super() }}{% endblock title %}
+{% block head %}
+    {{ super() }}
+    <script type="text/javascript">
+        $(document).ready(function () {
+           $('#order-export').click(function() {
+                showloading();
+                var status = $('#status').val()
+                var phone = $('#phone').val()
+                var startdate = $('#startdate').val()
+                var enddate = $('#enddate').val()
+                var next_page = $('#next_page').val()
+               var href = '/{{ session.appname }}/order/excel/export?status='+status+'&phone='+phone+'&startdate='+startdate+'&enddate='+enddate+'&next_page='+next_page;
+               $('#export').attr('href',href);
+               $('#export')[0].click()
+               setTimeout(function () {
+                   hideloading();
+               },2000)
+            });
+
+           $('.function').each(function () {
+               $(this).click(function () {
+                   event.stopPropagation();
+               })
+           })
+        });
+
+    </script>
+    <style type="text/css">
+    .flex{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    </style>
+{% endblock head %}
+
+{% block right_content %}
+
+    <div style="margin-top: 60px;">
+        <div class="flex">
+            <h1>上传excel表格批量创建或更新会员</h1>
+            <form class="col-md-6 flex" action="/{{session.appname}}/platform/user/upload" method='post' enctype='multipart/form-data'><p>
+                <input required style="margin-top: 20px;" class="form-control" type='file' name='file'>
+                <input style="margin-top: 20px;background: #370307;color:#fff; text-shadow: none" type='submit' class="btn btn-default form-control"  value='点我创建会员'>
+                {% if phone_update_line %}
+                    <div style="width:50%;color:red;margin:10px 0;display: flex;flex-direction: row;word-break:break-all">第{{phone_update_line}}行会员已存在，已更新</div>
+                {% endif %}
+                {% if phone_error_line %}
+                    <div style="width:50%;color:red;margin:10px 0;display: flex;flex-direction: row;word-break:break-all">第{{phone_error_line}}行手机号错误，未创建</div>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+{% endblock right_content %}

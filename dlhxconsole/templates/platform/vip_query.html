@@ -1,0 +1,92 @@
+{% extends "platform/index.html" %}
+{% block title %}{{ super() }}{% endblock title %}
+{% block head %}
+    {{ super() }}
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('._clickitem').each(function () {
+                $(this).click(function () {
+                    var uid = $(this).find('input:first').val();
+                    window.location.href = "/{{session.appname}}/platform/user/detail?target_uid=" + uid;
+                });
+            });
+        });
+
+    </script>
+{% endblock head %}
+
+{% block right_content %}
+    <div class='.container-fluid'>
+        <div class='row' style="margin: 0">
+            <div class='col-md-12' style="padding: 0">
+                <form id='query-form' class="form-inline" action="/{{ session.appname }}/platform/vip/query"
+                      method='post'>
+                    <div class="form-group">
+
+                        <input class='form-control' type='text' name='name' value="{{ form.name or '' }}"
+                               placeholder="姓名/11位手机号">
+                        <select class="form-control" name='levelid'>
+                            <option value="">---会员类型---</option>
+                            {% for levelid, l in levels.iteritems() %}
+                                {% if form.levelid == levelid %}
+                                    <option value="{{ levelid }}" selected>{{ l.name }}</option>
+                                {% else %}
+                                    <option value="{{ levelid }}">{{ l.name }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+
+                        <input type="hidden" name='next_page' id='next_page' value="{{ form.next_page or 1 }}"/>
+                    </div>
+                    <button type="submit" class="btn btn-default" style="background: #370307;color:#fff;text-shadow: none">查询</button>
+                    <a class="btn btn-default" href="/{{ session.appname }}/platform/vip/create">用户创建</a>
+                    <a class="btn btn-default" href="/{{ session.appname }}/platform/vip/import">批量导入</a>
+                </form>
+
+            </div>
+        </div>
+        <div clas='row' style='margin-top: 20px;'>
+            <div class='col-md-12' style="padding-left: 0">
+
+                <table class="table table-bordered table-condensed table-hover">
+                    <tbody>
+                    {# 遍历展示用户列表 #}
+                    {% for vip in vips %}
+                            <tr>
+                                <td class="_clickitem" style="position: relative; ">
+                                    <input type="hidden" value="{{ user.uid }}"/>
+{#                                    <img style="width: 32px; position: absolute; right: 10px; top: 35%; "#}
+{#                                         src="{{ url_for('static', filename='img/right.png') }}"/>#}
+                                    <b><span
+                                            style="display: block; border: 1px solid #ccc; width: 20px; height: 20px; border-radius: 10px; line-height: 20px; text-align: center; margin-bottom: 5px;">{{ loop.index + ((form.next_page or 1) - 1) * 10 }}</span></b>
+                                    <img src="{{ user.info.avatar }}" style="width: 40px; margin-right: 10px;">
+                                    <span>{{ vip.name }}</span><br>
+                                    <b>手机：</b><span>{{ vip.phone }}</span><br>
+                                    {% for viptype in vip.viptypes %}
+                                    <b>{{ viptype.name }}：</b><span>{{ viptype.remain }}</span><br>
+                                    {% endfor %}
+                                </td>
+                            </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                共{{ total_pages }}页，共{{ total_count }}条
+                <div class=row>
+                    <div class='col-md-12'>
+                        <nav>
+                            <ul class="pager">
+                                {% if page > 1 %}
+                                    <li><a href="#" id='to_previous_page'>上一页</a></li>
+                                {% endif %}
+                                <li>{{ page or 1 }}</li>
+                                {% if page < total_pages %}
+                                    <li><a href="#" id='to_next_page'>下一页</a></li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock right_content %}

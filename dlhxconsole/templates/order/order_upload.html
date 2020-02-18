@@ -1,0 +1,61 @@
+{% extends "order/index.html" %}
+{% block title %}{{ super() }}{% endblock title %}
+{% block head %}
+    {{ super() }}
+    <script type="text/javascript">
+        $(document).ready(function () {
+           $('#order-export').click(function() {
+                showloading();
+                var status = $('#status').val()
+                var phone = $('#phone').val()
+                var startdate = $('#startdate').val()
+                var enddate = $('#enddate').val()
+                var next_page = $('#next_page').val()
+               var href = '/{{ session.appname }}/order/excel/export?status='+status+'&phone='+phone+'&startdate='+startdate+'&enddate='+enddate+'&next_page='+next_page;
+               $('#export').attr('href',href);
+               $('#export')[0].click()
+               setTimeout(function () {
+                   hideloading();
+               },2000)
+            });
+
+           $('.function').each(function () {
+               $(this).click(function () {
+                   event.stopPropagation();
+               })
+           })
+        });
+
+    </script>
+    <style type="text/css">
+    .flex{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    </style>
+{% endblock head %}
+{% block left_content %}
+     <div class="list-group">
+        <a class="list-group-item active" style="background: #370307;color:#fff;border: none" href="#">订单</a>
+        <a class="list-group-item" href="{{'/%s/order/query' % session.appname}}">订单列表</a>
+        <a class="list-group-item" href="{{'/%s/order/excel/upload' % session.appname}}">批量更新</a>
+         <a class="list-group-item" href="{{'/%s/order/starttime' % session.appname}}">设置下单时间</a>
+
+     </div>
+{% endblock left_content%}
+{% block right_content %}
+
+    <div style="margin-top: 60px;">
+        <div class="flex">
+            <h1>上传excel表格更新订单</h1>
+            <form class="col-md-6 flex" action="/{{session.appname}}/order/excel/upload" method='post' enctype='multipart/form-data'><p>
+                 <input required style="margin-top: 20px;" class="form-control" type='file' name='file'>
+                <div style="color:red;margin:10px 0;">{{message}}</div>
+                 <input style="background: #370307;color:#fff;text-shadow: none;margin-top: 20px;"  type='submit' class="btn btn-default form-control" value='点我更新订单'>
+            </form>
+        </div>
+    </div>
+
+{% endblock right_content %}

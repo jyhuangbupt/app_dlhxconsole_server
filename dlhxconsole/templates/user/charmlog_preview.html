@@ -1,0 +1,231 @@
+{% extends "user/index.html" %} {% block title %} {{ super() }}{% endblock title %} {% block head %} {{ super() }}
+<link rel="stylesheet" type="text/css" media="screen" href={{url_for('static', filename='css/timeline-style.css')}} />
+
+<script type="text/javascript">
+    $(document).ready(function() {
+    });
+</script>
+<style type="text/css">
+    .file-preview-frame {
+        display: table;
+        margin: 8px;
+        height: 160px;
+        border: 1px solid #ddd;
+        box-shadow: 1px 1px 5px 0px #a2958a;
+        padding: 6px;
+        float: left;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .file-preview-frame:hover {
+        box-shadow: 3px 3px 5px 0px #333;
+    }
+
+    .file {
+        position: relative;
+        display: inline-block;
+        background: #428bca;
+        border: 1px solid #357ebd;
+        border-radius: 4px;
+        padding: 4px 12px;
+        overflow: hidden;
+        color: #fff;
+        font-size: 15px;
+        text-decoration: none;
+        text-indent: 0;
+        line-height: 20px;
+    }
+    .file input {
+        position: absolute;
+        font-size: 100px;
+        right: 0;
+        top: 0;
+        opacity: 0;
+    }
+    .file:hover {
+        background: #3276b1;
+        border-color: #285e8e;
+        color: #fff;
+        text-decoration: none;
+    }
+    .record-img-preview {
+        width: 100px;
+        height: 100px;
+    }
+</style>
+{% endblock head %} {% block right_content %}
+<div class="panel-group" id="accordion">
+    <form class="form-horizontal" action="" method='post'>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                    <a data-toggle="collapse" style="text-decoration:none;" data-parent="#accordion"
+                       href="#information">
+                        <div style="width:100%;">
+                            <h3 class="panel-title">FALY魅力管理日记修改（点我隐藏/展开）</h3>
+                        </div>
+                    </a>
+                </h4>
+            </div>
+            <div id="information" class="panel-collapse collapse in">
+                <div class="panel-body">
+                    {% if msg %}
+                    <p style="color: red">{{msg}}</p>
+                    {% endif %}
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label" style="padding-top: 0;"></label>
+                        <div class="col-sm-5">
+                            <b>日记名称：</b>&nbsp{{charmlog.title or '无'}}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label" style="padding-top: 0;"></label>
+                        <div class="col-sm-5">
+                            <b>FALY用户:</b>&nbsp{{charmlog.user.get('name') or charmlog.user.get('nickname') or ''}}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label" style="padding-top: 0;"></label>
+                        <div class="col-sm-5">
+                            <b>操作项目:</b>&nbsp{{charmlog.project or '无'}}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label" style="padding-top: 0;"></label>
+                        <div class="col-sm-5">
+                            <b>服务门店:</b>&nbsp{{ charmlog.organization.orgname }}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label" style="padding-top: 0;"></label>
+                        <div class="col-sm-5">
+                            <b>服务顾问:</b>&nbsp{{charmlog.counselor.get('name') or charmlog.counselor.get('nickname') or '无'}}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label" style="padding-top: 0;"></label>
+                        <div class="col-sm-5">
+                            <b>日记简介：</b>
+                            <div style="margin-left:15px">
+                                {{charmlog.detail | safe or '无'}}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="uploadfile-div" class="form-group">
+                            <label class="col-sm-2 control-label" style="padding-top: 0;"></label>
+                            <div class="col-sm-5">
+                                <b>术前照片：</b><br>
+                            </div>
+                    </div>
+
+                    <div class="form-group">
+                            {% if charmlog.imgurls %}
+                                {% for url in charmlog.imgurls %}
+                                <!-- <label class="col-sm-2 control-label" style="padding-top: 0;"></label> -->
+                                    <div class="col-md-4 file-preview-frame">
+                                        <img data-toggle="modal" data-target="#imgModal" data-whatever='{"imgurl":"{{url}}"}' src="{{url}}@!falythumbnail" alt="图片加载失败" >
+                                        <div tabindex="-1">
+                                            <!-- <div image-id="{{ k }}" data-logid="{{charmlog.logid}}" class="kv-file-remove btn btn-xs btn-default" style="float:right">
+                                                <i style="font-size:16px" class="glyphicon glyphicon-trash text-danger"></i>
+                                            </div> -->
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+    <h3>我的日记</h3>
+<section id="cd-timeline" class="cd-container">
+    {% for ct in ctdates %}
+    <span id="{{ct}}" style="margin-left:25px">{{ct}}</span>
+        <div class="cd-timeline-block">
+            <div class="cd-timeline-img cd-picture"></div>
+            <div class="same-date-record">
+            {% for r in records %}
+                {% if r.ctdate==ct %}
+                    <div class="cd-timeline-content">
+                        <h4>{{r.title}}</h4>
+                        <b>简介：</b><p style="font-size:14px">{{r.detail}}</p>
+                        <b>专家建议：</b><p style="font-size:14px">{{r.suggestion}}</p>
+                        <!-- <a href="http://www.helloweba.com/view-blog-285.html" class="cd-read-more" target="_blank">阅读全文</a> -->
+                        <!-- <span class="cd-date">{{ct}}</span> -->
+                        {% if r.cover %}
+                        <div  style="width:100px;height:100px" class="col-md-3 file-preview-frame">
+                            <img class="record-img-preview" data-toggle="modal" data-target="#imgModal" data-whatever='{"imgurl":"{{r.cover}}"}' src="{{r.cover}}" alt="不能显示该项">
+                            <div tabindex="-1">
+                                <!-- <div data-logid="{{charmlog.logid}}" class="record-file-remove btn btn-xs btn-default" style="float:right"><i style="font-size:16px" class="glyphicon glyphicon-trash text-danger"></i></div> -->
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if r.imgurls %}
+                            {% for url in r.imgurls %}
+                            <div  style="width:100px;height:100px" class="col-md-3 file-preview-frame">
+                                <img class="record-img-preview" data-toggle="modal" data-target="#imgModal" data-whatever='{"imgurl":"{{url}}"}' src="{{url}}" alt="不能显示该项">
+                                <div tabindex="-1">
+                                    <!-- <div data-logid="{{charmlog.logid}}" class="record-file-remove btn btn-xs btn-default" style="float:right"><i style="font-size:16px" class="glyphicon glyphicon-trash text-danger"></i></div> -->
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% endif %}
+
+                    </div>
+                    <br>
+                {% endif %}
+            {% endfor %}
+            </div>
+        </div>
+    {% endfor %}
+</section>
+
+<div class="modal fade" id="imgModal" tabindex="-1" role="dialog" aria-labelledby="imgModalLabel">
+    <div class="modal-dialog" style="" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span></button>
+            </div>
+            <div style="width:100%;max-height:700px;overflow:scroll;text-align:center">
+                <img id="view-img" src="" alt="不能显示该项" style="width:100%">
+            </div>
+            <div class="modal-footer" style="text-align: center">
+                <button class="btn btn-default" type="button" id="prev-img">上一张</button>
+                <button class="btn btn-default" type="button" id="next-img">下一张</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+
+$('#imgModal').on('show.bs.modal', function(event) {
+    var imgbtn = $(event.relatedTarget) // 触发事件的按钮
+    var data = imgbtn.data('whatever') // 解析出data-whatever内容
+    var modal = $(this)
+    modal.find("#view-img").attr('src',data.imgurl)
+    $("#next-img").click(function(){
+        if(imgbtn.parent().next().attr("class")=="col-md-4 file-preview-frame" || imgbtn.parent().next().attr("class")=="col-md-3 file-preview-frame"){
+            modal.find("#view-img").attr('src',imgbtn.parent().next().find("img").data("whatever").imgurl)
+            imgbtn = imgbtn.parent().next().find("img")
+        }
+    });
+    $("#prev-img").click(function(){
+        if(imgbtn.parent().prev().attr("class")=="col-md-4 file-preview-frame" || imgbtn.parent().prev().attr("class")=="col-md-3 file-preview-frame"){
+            modal.find("#view-img").attr('src',imgbtn.parent().prev().find("img").data("whatever").imgurl)
+            imgbtn = imgbtn.parent().prev().find("img")
+        }
+    })
+});
+
+</script>
+{% endblock right_content %}

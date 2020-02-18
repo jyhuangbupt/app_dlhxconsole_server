@@ -1,0 +1,49 @@
+{% extends "order/index.html" %}
+{% block title %}{{ super() }}{% endblock title %}
+{% block head %}
+    {{ super() }}
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+
+
+        });
+
+    </script>
+    <style type="text/css">
+    .flex{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    </style>
+{% endblock head %}
+{% block left_content %}
+     <div class="list-group">
+        <a class="list-group-item active" style="background: #370307;color:#fff;border: none" href="#">订单</a>
+        <a class="list-group-item" href="{{'/%s/order/query' % session.appname}}">订单列表</a>
+        <a class="list-group-item" href="{{'/%s/order/excel/upload' % session.appname}}">批量更新</a>
+        <a class="list-group-item" href="{{'/%s/order/starttime' % session.appname}}">设置下单时间</a>
+     </div>
+{% endblock left_content%}
+{% block right_content %}
+    {% if message %}
+        <div style="color:red;margin:10px 0; height: 30px">{{ message }}</div>
+    {% else %}
+        <div style="color:red;margin:10px 0;height: 30px"></div>
+    {% endif %}
+    <div style="margin-top: 60px;">
+        <div class="flex">
+            <h1>设置用户下单起始时间和不可下单时间</h1>
+            <form class="col-md-6 flex" action="/{{session.appname}}/order/starttime" method='post'>
+                <label style="margin-top: 20px;"  class="col-sm-4">下单起始时间</label>
+                <input class="form-control" placeholder="时间格式为：2019-01-01" required value="{{ starttime or'' }}" type='text' name='starttime'/>
+                <label style="margin-top: 20px;" class="col-sm-4">不可下单时间</label>
+                <textarea rows=3  class="form-control"  placeholder="请按示例填写，不同日期用英文输入法下';'分开，示例：20190820;20190930;20191011" name='disabledtime'>{{disabledtime}}</textarea>
+                <input style="background: #370307;color:#fff;text-shadow: none;margin-top: 20px"  type='submit' class="btn btn-default form-control" value='确定'>
+            </form>
+        </div>
+    </div>
+
+{% endblock right_content %}

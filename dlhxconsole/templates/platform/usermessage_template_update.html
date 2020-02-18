@@ -1,0 +1,94 @@
+{% extends "platform/index.html" %}
+{% block title %} {{ super() }}{% endblock title %}
+
+{% block head %}
+    {{ super() }}
+    <script type="text/javascript">
+        $(document).ready(function() {
+
+        });
+    </script>
+    <style type="text/css">
+    </style>
+{% endblock head %}
+
+{% block right_content %}
+    <form class="form-horizontal" action="/{{session.appname}}/usermessage/template/update?templateid={{ form.templateid }}" method='post'>
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">短信模板更新</h3>
+      </div>
+      <div class="panel-body">
+          {% if msg %}
+          <p style="color: red">{{msg}}</p>
+          {% endif %}
+            <input type="hidden" name='templateid' value={{form.templateid or ''}} />
+          <div class="form-group">
+            <label class="col-sm-2 control-label">
+              <span style="color: red;">*</span>&nbsp;模板名称：
+            </label>
+            <div class="col-sm-5">
+                <input type='text' class='form-control' name='name' placeholder="例子：会员短信验证码"
+                       value="{{form.name or ''}}" required >
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label">消息ID： </label>
+            <div class="col-sm-5">
+                <input type='text' class='form-control' name='messageid' value="{{form.messageid or ''}}"
+                placeholder="此字段可忽略, 由研发人员定义">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label">短信模板：</label>
+            <div class="col-sm-5">
+                <textarea class='form-control' name='sms_template' rows=5
+                          placeholder="例子: 【加美珍品】您好，您的短信验证码为：%s，有效期为%s分钟。
+
+需要填写的信息用%s代替, 由研发填充">{{form.sms_template or ''}}</textarea>
+            </div>
+          </div>
+
+{#          <div class="form-group">#}
+{#            <label class="col-sm-2 control-label">控制台可使用短信模板：</label>#}
+{#            <div class="col-sm-5">#}
+{#                <div class="checkbox">#}
+{#                  <label>#}
+{#                    {% if form.isconsolesms %}#}
+{#                    <input type='checkbox' name='isconsolesms' checked>#}
+{#                    {% else %}#}
+{#                    <input type='checkbox' name='isconsolesms'>#}
+{#                    {% endif %}#}
+{#                  </label>#}
+{#                </div>#}
+{#            </div>#}
+{#          </div>#}
+{##}
+{#          <div class="form-group">#}
+{#            <label class="col-sm-2 control-label">微信模板ID： </label>#}
+{#            <div class="col-sm-5">#}
+{#                <input type='text' class='form-control' name='weixin_template_id' value="{{form.weixin_template_id or ''}}" >#}
+{#            </div>#}
+{#          </div>#}
+{#        <div class="form-group">#}
+{#            <label class="col-sm-2 control-label">小程序模板ID： </label>#}
+{#            <div class="col-sm-5">#}
+{#                <input type='text' class='form-control' name='weixinminiapp_template_id' value="{{form.weixinminiapp_template_id or ''}}" >#}
+{#            </div>#}
+{#          </div>#}
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label"></label>
+            <div class="col-sm-2">
+              <button type="submit" style="margin-top: 20px;background: #370307;color:#fff; text-shadow: none"  class="btn btn-block">更新</button>
+            </div>
+          </div>
+      </div>
+    </div>
+
+    </form>
+
+{% endblock right_content %}

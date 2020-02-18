@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}{{title or session.appname_cn}}{% endblock title %}
+
+{% block head %}
+    {{ super() }}
+    <script type="text/javascript">
+        var max_second = 5;
+        var pass_second = 0
+        $(document).ready(function() {
+            setTimeout(changeseconds, 1000);
+        });
+
+        function changeseconds() {
+            if (pass_second >= max_second) {
+                history.go(-1);
+            }
+            $('#second').text(max_second - pass_second);
+            pass_second = pass_second + 1
+            setTimeout(changeseconds, 1000)
+        }
+
+    </script>
+{% endblock head %}
+
+{% block content %}
+    <div class='.container-fluid'>
+        <div class='row' style='margin-top: 70px; margin-left: 0; margin-right: 0; text-align: center;'>
+            <p style="font-size: 18px; font-weight: bold; height: 60px; line-height: 60px; margin: 0;">
+                该功能还未开通
+            </p>
+
+            <p style="font-size: 16px; margin: 0;">
+                <img src="{{ url_for('static', filename='img/404.png')}}" /> <br><br>
+                敬请期待
+            </p>
+
+            <p style="font-size: 14px; margin: 20px 0px;">
+                <input type="hidden" id="_redirect_url" value="{{redirect_url}}">
+                <span><a onclick="javascript: history.go(-1);">点击返回</a></span>
+                ，
+                <span>页面将在<e id="second" style="color: green;"></e>秒内自动返回！</span>
+            </p>
+        </div>
+    </div>
+
+{% endblock content %}

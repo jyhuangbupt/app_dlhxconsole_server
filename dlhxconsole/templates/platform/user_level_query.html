@@ -1,0 +1,81 @@
+{% extends "platform/index.html" %} {% block title %}{{ super() }}{% endblock title %} {% block head %} {{ super() }}
+<script type="text/javascript">
+    $(document).ready(function() {});
+</script>
+{% endblock head %} {% block right_content %}
+<div class='.container-fluid'>
+    <div class='row' style="margin: 0">
+        <div class='col-md-12' style="padding: 0">
+            <form id='query-form' class="form-inline" action="/{{session.appname}}/platform/user/level/query" method='post'>
+                <div class="form-group">
+
+                    <select class="form-control" name='status'>
+                        <option value="">---状态---</option>
+                      {% for k,v in statuses.iteritems() %}
+                        {% if form.status == k %}
+                        <option value="{{k}}" selected>{{v}}</option>
+                        {% else %}
+                        <option value="{{k}}">{{v}}</option>
+                        {% endif %}
+                      {% endfor %}
+                    </select>
+                    <input type="hidden" name='next_page' id='next_page' value={{form.next_page or 1}} />
+                </div>
+                <button type="submit" class="btn btn-success">查询</button>
+                <a class="btn btn-default" href="/{{session.appname}}/platform/user/level/create">级别创建</a>
+            </form>
+
+        </div>
+    </div>
+    <div clas='row' style='margin-top: 20px;'>
+        <div class='col-md-12' style="padding-left: 0">
+
+            <table class="table table-bordered table-condensed table-hover">
+                <tbody>
+                    {# 遍历展示用户级别列表 #}
+                    {% for level in levels %}
+                    <tr>
+                        <td style="position: relative; ">
+                            <b><span style="display: block; border: 1px solid #ccc; width: 20px; height: 20px; border-radius: 10px; line-height: 20px; text-align: center; margin-bottom: 5px;">{{loop.index + ((form.next_page or 1) - 1) * 10}}</span></b>                            {# <span>{{user.info.name or user.info.nickname}} ({{user.info.nickname}})</span><br> #}
+                            <b>级别值：<span>{{level.value}}</span></b><br>
+                            <b>级别名称：</b><span>{{level.name}}</span><br>
+                            <b>级别别名：</b><span>{{level.alias}}</span><br>
+                            <b>状态：</b>
+                                {% if level.status == 'normal' %}
+                                    <span style="color:green">正常</span>
+                                {% elif level.status == 'deleted' %}
+                                    <span style="color:red">已删除</span>
+                                {% else %}
+                                    <span>未知</span>
+                                {% endif %}<br>
+
+                            {% if level.status=='normal' %}
+                                <a class="buddy-btn-a" href="/{{session.appname}}/platform/user/level/update?levelid={{level.levelid}}">修改</a>
+                                <a class="buddy-btn-a confirm-op" href="/{{session.appname}}/platform/user/level/delete?levelid={{level.levelid}}&status={{form.status or ''}}&next_page={{form.next_page or 1}}">标记删除</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            共{{total_pages}}页，共{{total_count}}条
+            <div class=row>
+                <div class='col-md-12'>
+                    <nav>
+                        <ul class="pager">
+                            {% if page > 1 %}
+                            <li><a href="#" id='to_previous_page'>上一页</a></li>
+                            {% endif %}
+                            <li>{{page or 1}}</li>
+                            {% if page
+                            < total_pages %} <li><a href="#" id='to_next_page'>下一页</a></li>
+                                {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock right_content %}

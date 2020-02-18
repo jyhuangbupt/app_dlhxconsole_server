@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <!-- <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>加美珍品运营平台</title>
+    <link rel="stylesheet" href="//cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <script src="//cdn.bootcss.com/jquery/1.11.3/jquery.min.js"></script>
+    <script src="//cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script src={{ url_for('static', filename='js/jquery.md5.js') }} ></script>
+    <style type="text/css">
+        body {padding: 0; margin: 0; width: 100%; background-color: #333; color: #fafafa;}
+        form {width: 300px; margin: auto; margin-top: 60px;}
+{#        form-title {font-size: 26px; tex}#}
+    </style>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $('form').submit(function(e) {
+                var phone = $('#phone').val();
+                var token = $('#token').val();
+                //保存在本地
+                localStorage.setItem('styleconsole:login:phone', phone);
+                localStorage.setItem('styleconsole:login:token', token);
+            });
+
+            //实现自动登录逻辑
+            {% if _from == 'login' %}
+            var _phone = localStorage.getItem('styleconsole:login:phone');
+            var _token = localStorage.getItem('styleconsole:login:token');
+            if (_phone != null && _token != null) {
+                //自动登录
+                $('#phone').val(_phone);
+                $('#token').val(_token);
+                $('form').submit();
+            }
+            {% endif %}
+
+            $('#submit_btn').click(function(e) {
+                e.preventDefault();
+
+                var phone = $('#phone').val();
+                var smscode = $('#smscode').val();
+                showloading();
+                ajax(
+                    '/{{session.appname}}/user/login/token/get/ajax',
+                    {'phone': phone, 'smscode': smscode},
+                    function(data) {
+                        hideloading();
+                        var token = data.token;
+                        $('#token').val(token);
+                        $('form').submit();
+                    },
+                    function(meta) {
+                        hideloading();
+                        alert(meta.description);
+                    }
+                );
+            });
+
+
+            $('#smscode_btn').click(function() {
+                var phone = $('#phone').val();
+                if (phone.trim() == '') {
+                    alert('请输入手机号！');
+                    return;
+                }
+                showloading();
+                ajax(
+                    '/{{session.appname}}/user/smscode/send/ajax',
+                    {'phone': phone},
+                    function(data) {
+                        hideloading();
+                        function _timedown() {
+                            pass_second = pass_second + 1;
+                            $('#smscode_btn').text((max_second - pass_second) + ' 秒');
+                            if (max_second == pass_second) {
+                                  $('#smscode_btn').attr('disabled', false);
+                                return;
+                            }
+                            setTimeout(_timedown, 1000);
+                        };
+
+                        var max_second = 60;
+                        var pass_second = 0;
+                        $('#smscode_btn').attr('disabled', true);
+                        $('#smscode_btn').text(max_second + ' 秒');
+                        setTimeout(_timedown, 1000);
+                    },
+                    function(meta) {
+                        hideloading();
+                        alert(meta.description);
+                    }
+                );
+            });
+        });
+        function _checksubmit_allowed(event) {
+            var phone = $('#phone').val();
+            var smscode = $('#smscode').val();
+            if (phone == null || phone.trim() == '') {
+                $('#submit_btn').attr('disabled', true);
+                return;
+            }
+            if (smscode == null || smscode.trim() == '') {
+                $('#submit_btn').attr('disabled', true);
+                return;
+            }
+            $('#submit_btn').attr('disabled', false);
+        }
+
+        function showloading() {
+            $('#_showloading').show();
+        }
+        function hideloading() {
+            $('#_showloading').hide();
+        }
+
+        function ajax(url, data, success, failure) {
+          $.ajax({
+            url: url,
+            method: 'POST',
+            data: data,
+            dataType: 'json',
+            success: function(data) {
+              console.log(data);
+              console.log(success);
+              console.log(failure);
+              if (data.meta.code == 200) {
+                if (success != null) {
+                    success(data.data);
+                }
+              } else {
+                console.log('访问网络错误！');
+                console.log(failure != null);
+                console.log(data.meta);
+                if (failure != null) {
+                    console.log('in failure');
+                    failure(data.meta);
+                }
+              }
+            },
+            error: function() {
+                failure({'code': 500, 'message': 'ServerError', 'description': '访问网络错误！'});
+            }
+          });
+        }
+        function showloading() {
+            $('#_showloading').show();
+        }
+        function hideloading() {
+            $('#_showloading').hide();
+        }
+
+    </script>
+</head>
+<body>
+    <form action="/{{session.appname}}/user/login" method='post'>
+      <h3 class='text-center'>加美珍品 运营平台</h3>
+      <br><br>
+        {% if message and message.alert %}
+        <div class="alert alert-danger alert-dismissible" id="alert-div" role="alert">
+            {{ message.alert }}
+        </div>
+        {% endif %}
+      <div class="form-group">
+        <label class="sr-only" for="phone"></label>
+        <input type="phone" class="form-control" id="phone" name="phone" oninput="_checksubmit_allowed(event)" placeholder="手机号" value='' required />
+        <input type="hidden" id='token' name="token" />
+      </div>
+      <div class="form-group">
+        <label class="sr-only" for="smscode"></label>
+        <div class="input-group">
+          <input type="text" class="form-control" id="smscode" name="smscode" oninput="_checksubmit_allowed(event)" placeholder="验证码" aria-describedby="smscode">
+          <span class="input-group-btn">
+            <button style="border: 1px solid #65b565; width: 100px;" class="btn btn-default" id="smscode_btn" type="button">发送验证码</button>
+          </span>
+        </div>
+      </div>
+{#      <div class="form-group">#}
+{#        <label class="sr-only" for="account"></label>#}
+{#        <input type="text" class="form-control" id="phone" name="account" placeholder="账号" value='' required />#}
+{#        <input type="hidden" id='token' name="token" />#}
+{#      </div>#}
+{#      <div class="form-group">#}
+{#        <label class="sr-only" for="password"></label>#}
+{#          <input type="password" class="form-control" id="password" name="password" placeholder="密码" value="">#}
+{#      </div>#}
+
+      <!-- <div class="form-group">
+        <label class="sr-only" for="password"></label>
+        <input type="hidden" id="password" name="password" />
+        <input type="password" class="form-control" id="_password" placeholder="Password" value='' required />
+      </div> -->
+
+      <button style="background: #370307;color:#fff; text-shadow: none" type="submit" id='submit_btn' class="btn btn-block">登 陆</button>
+
+      <br><br>
+
+      <center>
+{#        <span class="help-block">基于巴迪家族办公室平台账户登陆。<br><br>请先扫码关注以下相关公众号，并<br>【使用相同的手机号注册】</span>#}
+{#        <br>#}
+{#        <span class="help-block">巴迪家族办公室<span style="color: yellow; ">{{'（测试）' if session.deploy=='dev' else ''}}</span>（家族运营人员）</span>#}
+{#        {% if session.deploy == 'dev' %}#}
+{#        <img style="width: 200px;" src="http://buddyimages.oss-cn-beijing.aliyuncs.com/apps/weixinmp/qrcode/dev_buddy.jpg" />#}
+{#        {% else %}#}
+{#        <img style="width: 200px;" src="http://buddyimages.oss-cn-beijing.aliyuncs.com/apps/weixinmp/qrcode/pro_buddy.jpg" />#}
+{#        {% endif %}#}
+{##}
+{#        <br><br><br><br>#}
+{#        <span class="help-block">FALY健康<span style="color: yellow; ">{{'（测试）' if session.deploy=='dev' else ''}}</span>（FALY运营人员）</span>#}
+{#        {% if session.deploy == 'dev' %}#}
+{#        <img style="width: 200px;" src="http://buddyimages.oss-cn-beijing.aliyuncs.com/apps/weixinmp/qrcode/dev_faly.jpg" />#}
+{#        {% else %}#}
+{#        <img style="width: 200px;" src="http://buddyimages.oss-cn-beijing.aliyuncs.com/apps/weixinmp/qrcode/pro_faly.jpg" />#}
+{#        {% endif %}#}
+{##}
+{#        <br><br><br><br>#}
+{#        <span class="help-block">米丽俱乐部<span style="color: yellow; ">{{'（测试）' if session.deploy=='dev' else ''}}</span>（米丽运营人员）</span>#}
+{#        {% if session.deploy == 'dev' %}#}
+{#        <img style="width: 200px;" src="http://buddyimages.oss-cn-beijing.aliyuncs.com/apps/weixinmp/qrcode/dev_mily.jpg" />#}
+{#        {% else %}#}
+{#        <img style="width: 200px;" src="http://buddyimages.oss-cn-beijing.aliyuncs.com/apps/weixinmp/qrcode/pro_mily.jpg" />#}
+{#        {% endif %}#}
+        <br><br>
+        <br><br>
+        <br><br>
+        <br><br>
+        <br><br>
+        <br><br>
+        <br><br>
+        <br><br>
+        <br><br>
+        <br><br>
+        <br><br>
+      </center>
+    </form>
+
+
+    <div id='_showloading' style="display: none; position: fixed; top: 0; z-index: 10000; width: 100%; height: 100%; text-align: center; background-color: rgba(0,0,0, 0.3);">
+        <img id='loading' src="http://static.buddydc.com/faly/img/loading.gif" style="height: 30px; margin-top: 260px;">
+    </div>
+
+</body>
+</html>

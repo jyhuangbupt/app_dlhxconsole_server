@@ -1,0 +1,71 @@
+{% extends "platform/index.html" %}
+{% block title %} {{ super() }}{% endblock title %}
+
+{% block head %}
+    {{ super() }}
+    <script type="text/javascript">
+        $(document).ready(function () {
+        });
+    </script>
+    <style type="text/css">
+    </style>
+{% endblock head %}
+
+{% block right_content %}
+    <form class="form-horizontal" action="/{{ session.appname }}/platform/user/custom/create" method='post'>
+
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">自定义用户创建</h3>
+            </div>
+            <div class="panel-body">
+                {% if msg %}
+                    <p style="color: red">{{ msg }}</p>
+                {% endif %}
+
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">
+                        <span style="color: red;">*</span>&nbsp;账号
+                    </label>
+                    <div class="col-sm-5">
+                        <input type='text' class='form-control' name='userid' value="{{ form.userid or '' }}" placeholder="仅限英文和数字组合" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">
+                        <span style="color: red;">*</span>&nbsp;姓名
+                    </label>
+                    <div class="col-sm-5">
+                        <input type='text' class='form-control' name='name' value="{{ form.name or '' }}" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-2 control-label" style="padding-top: 0;">头像</label>
+                    <div class="col-sm-5" style="position: relative;">
+                        <div class="input-group">
+                            <input type="text" class="form-control" name="avatar" value="{{ form.avatar or '' }}"/>
+                            <span class="input-group-btn">
+                        <button class="btn btn-success buddy_uploadimage_btn" type="button">+</button>
+                        <input class="buddy_uploadimage_input" style="opacity: 0;" type='file' name='image-file'
+                               accept="image/jpeg,image/png">
+                      </span>
+                        </div>
+                        <img style="width: 200px;" src="{{ form.avatar or '' }}"/>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-2 control-label"></label>
+                    <div class="col-sm-2">
+                        <button type="submit" class="btn btn-success btn-block">创建</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </form>
+
+{% endblock right_content %}

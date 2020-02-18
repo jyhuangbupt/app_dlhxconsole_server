@@ -1,0 +1,88 @@
+/* 定义全局变量 */
+:root {
+    --color-primary: #a63cd4;
+    --color-primary-light: #e2bef1;
+    --color-primary-dark: #7908aa;
+    --color-secondary: #854A9F;
+    --color-gray: gray;
+    --color-gray-light: #ccc;
+    --color-gray-light1: #ccc;
+    --color-gray-light2: #ddd;
+    --color-gray-light3: #eee;
+    --color-gray-light4: #f6f6f6;
+    --color-font-dark2: #333;
+    --color-font-dark1: #414852;
+    --color-font-dark: #414852;
+    --color-font: gray;
+}
+
+html {font-size: 10px; }
+body {padding: 0; font-size: 1.2rem; font-family:"-apple-system-font,BlinkMacSystemFont,Helvetica Neue,PingFang SC,Hiragino Sans GB,Microsoft YaHei UI,Microsoft YaHei,Arial,sans-serif"; color: var(--color-font-dark1); background-color: #f6f8f9;}
+/* body {padding: 0; font-size: 1.2rem; background-color: black; color: #bbb;} */
+div, ul, li, h1, h2, h3, h4, h5, h6, img, p, dl, dt, dd, ol, th, td p, span {margin: 0px; padding: 0px;}
+li {list-style: none;}
+
+.horizontal-line {width: 100%; height: 1px; background-color: var(--color-gray-light3); margin: 5px 0;}
+
+.input-bottmline {outline: none; border: 0; border-bottom: 1px solid var(--color-gray-light); -webkit-appearance: none; box-shadow: none; border-radius: 0; background-color: transparent;}
+.input-bottmline:focus {border-bottom: 1px solid var(--color-primary); box-shadow: none;}
+
+.item-click {cursor: pointer;}
+
+.button-circle {outline: none; font-size: 1.2rem; border: 1px solid var(--color-primary); border-radius: 100px; color: var(--color-primary); letter-spacing: 2px; text-align: center; background-color: white;}
+.button-circle-large {line-height: 36px; padding: 0 22px;}
+.button-circle-middle {line-height: 32px; padding: 0 20px;}
+.button-circle-small {line-height: 26px; font-size: 1rem; padding: 0 10px;}
+.button-circle-disabled {border-color: var(--color-gray-light1); background-color: var(--color-gray-light3); color: var(--color-font-dark2);}
+.button-circle:active {background-color: var(--color-primary); color: white;}
+.button-solid {background-color: var(--color-primary); color: white;}
+.button-solid:active {background-color: white; color: var(--color-primary); }
+.button-gray {border-color: var(--color-gray-light2); color: var(--color-font);}
+.button-gray:active {background-color: var(--color-primary); border-color: var(--color-primary); color: white; }
+
+.icon-circle {cursor: pointer; display: inline-block; border: 1px solid var(--color-gray-light); border-radius: 4px; color: var(--color-font); line-height: 26px; width: 26px; height: 26px; font-size: 1rem; text-align: center;}
+.icon-circle .iconfont {font-size: 1rem;}
+.icon-circle:active {background-color: var(--color-primary); border-color: var(--color-primary); color: white; }
+
+.card {position: relative; width: 100%; border-bottom: 1px solid var(--color-gray-light3);}
+.card:hover {border-bottom: 1px solid var(--color-primary-light); color: var(--color-primary); }
+.card .right-arrow {position: absolute; right: 5px; top: 35%;}
+
+.cardflip-auto {position: relative; perspective: 800px; transform-style: preserve-3d; transition: transform 0.5s;}
+.cardflip-auto-front {position: absolute; width: 100%; height: 100%; backface-visibility: hidden; -webkit-backface-visibility: hidden; -moz-backface-visibility:hidden; -ms-backface-visibility:hidden;}
+.cardflip-auto-back {position: absolute; width: 100%; height: 100%; backface-visibility: hidden; -webkit-backface-visibility: hidden; -moz-backface-visibility:hidden; -ms-backface-visibility:hidden; transform: rotateY( 180deg );}
+.cardflip-auto:hover {transform: rotateY( 180deg );}
+
+/* 从左到右，上下居中排列 */
+.container-horizontal-left {display: flex; display: -webkit-flex; flex-flow: row nowrap; justify-content: flex-start; align-items: center;}
+/* 从上到下，左右居中排列 */
+.container-vertical-top {display: flex; display: -webkit-flex; flex-flow: column nowrap; justify-content: flex-start; align-items: center;}
+
+/* 右上角横幅角标 */
+/* 代码样例：
+<div class="badge-banner" style="background-color: gray; color: white; top: 18px; right: -30px; width: 120px; ">
+    <span>未发布</span>
+</div>
+*/
+.badge-banner {display: block; position: absolute; transform: rotate(45deg); text-align: center;}
+
+/* 图片覆盖背景 */
+.img-bg-cover {background-size: cover; background-position: center center; background-repeat: no-repeat;}
+
+/* 顺时针旋转动画 */
+.rotate-clockwise {animation: rotate-clockwise 1s 0s linear infinite; -webkit-animation: rotate-clockwise 1s 0s linear infinite;}
+@-webkit-keyframes rotate-clockwise {
+    0% {transform: rotate(0); -webkit-transform: rotate(0); -moz-transform:rotate(0); -ms-transform:rotate(0); -o-transform:rotate(0);}
+    /* 30% {transform: rotate(275deg);} */
+    100% {transform: rotate(360deg); -webkit-transform: rotate(360deg); -moz-transform:rotate(360deg); -ms-transform:rotate(360deg); -o-transform:rotate(360deg);}
+}
+
+.clipArea{ height: 200px; }
+.prev-clip-image{ margin: 0 auto;min-height: 200px;height: 200px;background-color: #666; }
+
+.form-photoclip .form-photoclip-btn {cursor:pointer;}
+.form-photoclip .form-photoclip-btn:hover {background-color: #ccc;}
+.form-photoclip .form-photoclip-file {width:0; height: 0; opacity: 0;}
+.form-photo .form-photo-btn {cursor:pointer;}
+.form-photo .form-photo-btn:hover {background-color: #ccc;}
+.form-photo .form-photo-file {width:0; height: 0; opacity: 0;}

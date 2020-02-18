@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    {% block head %}
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>{% block title %}加美珍品管理平台{% endblock title %}</title>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+    <script src="https://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+    <script src="https://cdn.bootcss.com/blueimp-md5/1.1.0/js/md5.js"></script>
+    <script src="//cdn.bootcss.com/jquery/1.11.3/jquery.min.js"></script>
+    <link rel="stylesheet" type="text/css" media="screen" href="{{ url_for('static', filename='css/bootstrap-theme.min.css') }}">
+    <link rel="stylesheet" type="text/css" media="screen" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/jquery.ajaxfileupload.js') }}" ></script>
+
+    <link rel="stylesheet" type="text/css" media="screen" href={{ url_for('static', filename='css/bootstrap-datetimepicker.min.css') }} />
+    <script src={{ url_for('static', filename='js/bootstrap-datetimepicker.min.js') }}></script>
+    <script src = {{ url_for('static', filename = 'js/bootstrap-datetimepicker.zh-CN.js') }}></script>
+    <link rel="stylesheet" type="text/css" href={{ url_for('static', filename='css/font-awesome.css') }} />
+    <link rel="stylesheet" type="text/css" href={{ url_for('static', filename='css/simditor.css') }} />
+    <link rel="stylesheet" type="text/css" media="screen" href="{{ url_for('static', filename='css/xdock.mp.css') }}">
+    <link rel="stylesheet" type="text/css" media="screen" href="{{ url_for('static', filename='css/iconfont.css') }}">
+    <script src={{ url_for('static', filename='js/module.js') }} ></script>
+    <script src = {{ url_for('static', filename = 'js/hotkeys.js') }} ></script>
+    <script src={{ url_for('static', filename='js/uploader.js') }} ></script>
+    <script src = {{ url_for('static', filename = 'js/simditor.js') }} ></script>
+    <script src = {{ url_for('static', filename = 'js/simditor-dropzone.js') }} ></script>
+    <script src="{{ url_for('static', filename='js/xdock.js') }}"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+            hideloading();
+            //加载xdock对象
+            xdock = new XDock();
+            xdock.init();
+            //快捷方法，弃用，以后直接从xdock引用
+            ajax = xdock.ajax;
+            userUpdate = xdock.userUpdate;
+            showloading = xdock.showloading;
+            hideloading = xdock.hideloading;
+            hideloading();
+            showtoast = xdock.showtoast;
+            $('#next_page').val($('#next_page').val() == '' ? 1 : $('#next_page').val());
+            if (parseInt($('#next_page').val()) == 1) {
+                $('#to_previous_page').hide();
+            }
+            $('#to_previous_page').click(function() {
+                var next_page = parseInt($('#next_page').val());
+                $('#next_page').val(next_page <= 1 ? 1 : next_page - 1);
+                $('#query-form').submit();
+            })
+            $('#to_next_page').click(function() {
+                var next_page = parseInt($('#next_page').val());
+                $('#next_page').val(next_page + 1);
+                $('#query-form').submit();
+            })
+
+            //start/////////////////////////////////////////////////////////////////
+            //为所有用户搜索框提供支持，根据名字检索，时时反馈
+            $('.user-search2').each(function() {
+                $(this).click(function() {
+                    window._user_search2_name = $(this);
+                    window._user_search2_uid = window._user_search2_name.prev();
+                    window._user_search2_left = document.body.scrollLeft;
+                    window._user_search2_top = document.body.scrollTop;
+                    //展示搜索框
+                    $('#user-search2-dev').show();
+                    $('#user-search2-name').focus();
+                });
+            });
+            $('#user-search2-cancel').click(function() {
+                $('#user-search2-dev').hide();
+            });
+            $('#user-search2-clear').click(function() {
+                window._user_search2_name.val('');
+                window._user_search2_uid.val('');
+                $('#user-search2-dev').hide();
+                window._user_search2_name.change();
+            });
+            $('#user-search2-submit').click(function(e) {
+                e.preventDefault()
+                //删除上次查询记录
+                $('#user-search2-list').empty();
+                //输入为空，忽略操作
+                var name = $(this).prev().val();
+                // if (name == '') {
+                //     return
+                // }
+                var url = "{{'/%s/user/ajax/query/2' % session.appname}}";
+                var data = {
+                    'name': name
+                }
+                showloading();
+                ajax(url, data, function(data) {
+                    if (data.users.length <= 0) {
+                        $('#user-search2-list').append('<p style="margin-left: 15px;">---没有符合条件的用户---</p>');
+                    }
+                    for (var i in data.users) {
+                        //构造一个可点击的用户对象
+                        var user = data.users[i];
+                        var _oneuserdom = $('' +
+                            '<div class="list-group">' +
+                            '<input type="hidden" value="' + user.uid + '|' + user.name + '|' + user.nickname + '" />' +
+                            '<a href="#" class="list-group-item">' +
+                            '<h5 class="list-group-item-heading">姓名：' + user.name + '</h5>' +
+                            '<p class="list-group-item-text">昵称：' + user.nickname + '</p>' +
+                            '<p class="list-group-item-text">手机：' + user.phone + '</p>' +
+                            '</a>' +
+                            '</div>')
+                        _oneuserdom.click(function(e) {
+                            //此处必须阻止事件传递，不然窗口会默认滚动当前界面到该被点击的元素位置。
+                            e.preventDefault();
+                            var tmp = $(this).find('input').first().val();
+                            console.log(tmp);
+                            var uid = tmp.split('|')[0];
+                            var name = tmp.split('|')[1];
+                            var nickname = tmp.split('|')[2];
+                            window._user_search2_name.val((name == null || name == '' || name == 'undefined') ? nickname : name);
+                            window._user_search2_uid.val(uid);
+                            $('#user-search2-dev').hide();
+                            window._user_search2_name.focus();
+                            //滚动到原来位置
+                            window.scrollTo(window._user_search2_left, window._user_search2_top);
+                            window._user_search2_name.change();
+                        });
+                        $('#user-search2-list').append(_oneuserdom);
+                    }
+                });
+            });
+            //end/////////////////////////////////////////////////////////////////
+
+            //格式化所有的人民币金额字段
+            $('.buddy-currency').each(function() {
+                $(this).html(formatCurrency(parseFloat($(this).text())) + '<span class="buddy-currency-rmb">￥</span>');
+            });
+
+            $('.buddy-buttonlink').each(function() {
+                $(this).click(function(e) {
+                    e.preventDefault();
+                    window.location.href = $(this).val();
+                });
+            });
+
+            $('#_gototop').click(function() {
+                window.scrollTo(0, 0);
+            });
+            $('#_gotoreturn').click(function() {
+                  history.go(-1);
+            });
+            $('._gotoreturn').each(function() {
+                $(this).click(function() {
+                    history.go(-1);
+                });
+            });
+            $('#_swich_left_nav').click(function() {
+                console.log($('#_left_nav').css('display'));
+                if ($('#_left_nav').css('display') == 'none') {
+                    $('#_left_nav').show();
+                } else {
+                    $('#_left_nav').hide();
+                }
+            });
+
+            $('.confirm-op').each(function() {
+                $(this).click(function(e) {
+                    if (!confirm('确定操作？')) {
+                        e.preventDefault();
+                    }
+                });
+            })
+
+            //选中菜单前面加一个红色的圆点
+            $('a.list-group-item').each(function() {
+                //特殊显示当前页面对应的左侧菜单。
+                if ($(this).attr('href').split('?')[0]  == window.location.pathname) {
+                    $(this).prepend('<span style="color: red; margin-right: 1px;">●</span>')
+                }
+            });
+            //为所有可能的点击增加loading
+            $('a.list-group-item').each(function() {
+                $(this).click(function() { showloading(); });
+            });
+{#            $('.buddy-btn-a').each(function() {#}
+{#                $(this).click(function() { showloading(); });#}
+{#            });#}
+
+
+            //异步上传文件//////////start///////////////////////////////
+            $('.buddy_uploadimage_btn').each(function() {
+                $(this).click(function() { $(this).next().click(); window.current_uploadimage_input = $(this); });
+            });
+            $('.buddy_uploadimage_input').each(function() {
+                $(this).AjaxFileUpload({
+                    action: '/{{session.appname}}/resource/jquery/fileupload/ajax',
+                    onChange: function(filename) { showloading(); },
+                    onComplete: function(filename, data) {
+                        hideloading();
+                        if (data.success == true) {
+                            window.current_uploadimage_input.parent().prev().val(data.file_url);
+                            window.current_uploadimage_input.parent().parent().next().attr('src', data.file_url);
+                            showtoast(data.msg);
+                        } else { showtoast(data.msg); }
+                    },
+                });
+            })
+            $('.buddy_uploadfile_btn').each(function() {
+                $(this).click(function() { $(this).next().click(); window.current_uploadimage_input = $(this); });
+            });
+            $('.buddy_uploadfile_input').each(function() {
+                $(this).AjaxFileUpload({
+                    action: '/{{session.appname}}/resource/jquery/fileupload/ajax',
+                    onChange: function(filename) { showloading();$('#success-video').css('display','none') },
+                    onComplete: function(filename, data) {
+                        hideloading();
+                        if (data.success == true) {
+                            window.current_uploadimage_input.parent().prev().val(data.file_url);
+                            window.current_uploadimage_input.parent().parent().next().attr('src', data.file_url);
+                            showtoast(data.msg);
+                            $('#success-video').css('display','block')
+
+                        } else { showtoast(data.msg); }
+                    },
+                });
+            });
+            ///////////////////////////////////////////////////////////
+
+
+            // 隐藏所有没有权限的菜单和按钮，即在权限定义中定义的但没有分配给当前用户的菜单
+            var all_menu_urls = $('#all_menu_urls').val().split('|');
+            var urls = "{{session['power']}}"
+            var nopower = new Array();
+            for (var i in all_menu_urls){
+                if(urls.indexOf(all_menu_urls[i])<0){
+                    nopower.push(all_menu_urls[i])
+                }
+            }
+
+            for(var x in nopower){
+                $('a').each(function() {
+                    if($(this).attr('href')){
+                        if ($(this).attr('href').indexOf(nopower[x])>=0) {
+                            $(this).hide();
+                        }
+                    }
+                });
+            }
+            $('div.list-group').each(function() {
+                var div_a = $(this).find('a.list-group-item');
+                var count=0
+                if(div_a.length){
+                    for(var index in div_a){
+                        if (div_a[index].style.display != 'none' && $(div_a[index]).attr('class')!='list-group-item active'){
+                            break;
+                        }
+                        if (index==(div_a.length-1)){
+                            $(this).hide();
+                            break;
+                        }
+                    }
+                }
+
+            });
+
+        });
+
+        function ajax(url, data, success, failure) {
+            $.ajax({
+                url: url,
+                data: data,
+                type: 'post',
+                dataType: 'json',
+                success: function(data) {
+                    hideloading();
+                    if (data.meta.code == 200) {
+                        if (success != null) {
+                            success(data.data);
+                        }
+                    } else {
+                        if (failure != null) {
+                            failure(data.meta)
+                        }
+                    }
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                  hideloading();
+                  showtoast('网络错误！');
+                  console.log(xhr);
+                  console.log(ajaxOptions);
+                  console.log(thrownError);
+                  if (failure != null) {
+                      failure({'code': 500, 'message': 'ServerError', 'description': '访问网络错误！'});
+                  }
+                }
+            });
+        }
+
+        function checkifchinese(string) {
+            var re = /[^u4e00-u9fa5]/;
+            if (re.test(string)) {
+                return true;
+            }
+            return false;
+        }
+
+        /**
+         * 将数值四舍五入(保留2位小数)后格式化成金额形式
+         *
+         * @param num 数值(Number或者String)
+         * @return 金额格式的字符串,如'1,234,567.45'
+         * @type String
+         */
+        function formatCurrency(num) {
+            num = num.toString().replace(/\$|\,/g, '');
+            if (isNaN(num))
+                num = "0";
+            sign = (num == (num = Math.abs(num)));
+            num = Math.floor(num * 100 + 0.50000000001);
+            cents = num % 100;
+            num = Math.floor(num / 100).toString();
+            if (cents < 10)
+                cents = "0" + cents;
+            for (var i = 0; i < Math.floor((num.length - (1 + i)) / 3); i++)
+                num = num.substring(0, num.length - (4 * i + 3)) + ',' +
+                num.substring(num.length - (4 * i + 3));
+            return (((sign) ? '' : '-') + num + '.' + cents);
+        }
+
+        /**
+         * 展示一个会自动消失的提示信息，简称toast，3秒自动消失。
+         */
+        function showtoast(msg, color) {
+            if (color == null || color == '') {
+                color = '#fafafa';
+            }
+            var p = $('#_showtoast').find('p').first();
+            p.text(msg);
+            p.css('color', color);
+            $('#_showtoast').show()
+            setTimeout(function() {
+                $('#_showtoast').hide();
+            }, 3000);
+        }
+        function showloading() {
+            $('#_showloading').show();
+        }
+        function hideloading() {
+            $('#_showloading').hide();
+        }
+
+    </script>
+    <style type="text/css">
+        body {
+            font-size: 12px;
+        }
+
+        @grid-float-breakpoint: 1024px;
+        .user-search {
+            position: relative;
+        }
+
+        #user-search-list {
+            position: absolute;
+            background-color: #eee;
+            min-width: 100px;
+            z-index: 100;
+        }
+
+        #user-search-list ul {
+            padding: 0;
+            margin: 0;
+        }
+
+        #user-search-list ul li {
+            list-style: none;
+            padding-left: 5px;
+            padding-right: 5px;
+            border-bottom: solid 1px #bbb;
+            height: 28px;
+            line-height: 28px;
+        }
+
+        #user-search-list ul li:hover {
+            background-color: #333;
+            color: #fafafa;
+        }
+
+        .list-group {
+            margin-bottom: 0px;
+        }
+
+        .list-group-item {
+            padding: 5px 0 5px 10px;
+        }
+
+        .buddy-currency {
+            font-size: 12px;
+            font-style: italic;
+            color: rgba(250, 130, 0, 1);
+        }
+
+        .buddy-currency-rmb {
+            font-size: 10px;
+        }
+
+        .buddy-font-xs {
+            font-size: 10px;
+        }
+
+        .buddy-font-s {
+            font-size: 12px;
+        }
+
+        .buddy-font-m {
+            font-size: 14px;
+        }
+
+        .buddy-btn-a {
+            display: inline-block;
+            height: 20px;
+            line-height: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            text-align: center;
+            width: auto;
+            padding: 0 5px;
+            margin: 3px 3px 0 0;
+        }
+    </style>
+    {% endblock head %}
+</head>
+
+<body>
+    <div class='.container-fluid'>
+        <!--标题部分 -->
+        {% block top %}
+        <div id="_topnavbar" style="position: fixed; width: 100%; top: 0; z-index: 1000;">
+            <div class='row' style="margin: 0;">
+                <div class='col-md-12' style="padding: 0">
+                    <nav class="navbar navbar-default navbar-inverse" role="navigation" style="margin-bottom: 10px; border: 0; border-radius: 0;">
+                        <div class="container-fluid" style="padding: 0">
+                            <!-- Brand and toggle get grouped for better mobile display -->
+                            <div class="navbar-header">
+                                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                          <span class="sr-only">Toggle navigation</span>
+                          <span class="icon-bar"></span>
+                          <span class="icon-bar"></span>
+                          <span class="icon-bar"></span>
+                        </button>
+
+                        <a class="navbar-brand" style="margin-left: 10px; margin-top: -5px; line-height: 14px; font-size: 12px;">
+                            <span style="color: #fafafa;">加美珍品<span style="color: yellow;">{{'（测试）' if session.deploy == 'dev' else ''}}</span></span><br><span style="font-size: 10px;">healthyworld</span>
+                        </a>
+                      </div>
+
+                            <!-- Collect the nav links, forms, and other content for toggling -->
+                            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1" style="padding-left: 50px;">
+                                <ul class="nav navbar-nav">
+
+                                    <li class="dropdown">
+                                        <a href="{{'/%s/platform/user/query' % session.appname}}">平台运营</a>
+                                    </li>
+
+                                    <li class="dropdown">
+                                        <a href="{{'/%s/order/query' % session.appname}}">订单管理</a>
+                                    </li>
+                                    <li class="dropdown">
+                                        <a href="{{'/%s/activity/query' % session.appname}}">活动管理</a>
+                                    </li>
+                                </ul>
+
+                                <ul class="nav navbar-nav navbar-right">
+                                    {% if session.user %}
+                                    <li style="padding: 5px 0"><img style="cursor:pointer;height: 40px; border-radius: 40px; " onclick="javascript:window.location.href='/{{session.appname}}/platform/user/detail?target_uid={{session.user.uid}}'" src="{{session.user.avatar}}" /></li>
+                                    {% endif %}
+                                    <li><a  style="padding: 15px 5px" href="/{{session.appname}}/user/logout" >退出</a></li>
+                                </ul>
+
+                            </div>
+                            <!-- /.navbar-collapse -->
+                        </div>
+                        <!-- /.container-fluid -->
+
+                    </nav>
+                </div>
+            </div>
+        </div>
+        {% endblock top %}
+        <!-- 界面下部分 -->
+        {% block content %}{% endblock content %}
+    </div>
+
+    <div id="user-search2-dev" class="container-fluid" style="position: fixed; top: 0; left: 0; z-index: 1000; width: 100%; height: 100%; background:rgba(0, 0, 0, 0.8); display: none;">
+        <div class='.container-fluid' style="width: 90%; min-height: 80%; margin-top: 5%; margin-left: 5%; background-color: #fafafa; padding: 10px;">
+            <div class='row'>
+                <div class='col-md-8'>
+                    <form id='query-form' class="form-inline" method='post'>
+                        <div class="form-group">
+                            <input id="user-search2-name" type="text" class="form-control" placeholder="姓名/昵称/11位手机号/用户ID" name='name'>
+                            <button type="button" id="user-search2-submit" class="btn btn-success">查询</button>
+                            <button type="button" id="user-search2-cancel" class="btn btn-success">取消</button>
+                            <button type="button" id="user-search2-clear" class="btn btn-success">清空</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div id="user-search2-list" class='row' style='margin-top: 20px;'>
+                {#
+                <div class="list-group">
+                    <input type="hidden" />
+                    <a href="#" class="list-group-item">
+                        <h5 class="list-group-item-heading">姓名：</h5>
+                        <p class="list-group-item-text">昵称：</p>
+                        <p class="list-group-item-text">手机：</p>
+                        <p class="list-group-item-text">级别：</p>
+                    </a>
+                </div> #}
+            </div>
+        </div>
+    </div>
+
+    <img id="_gotoreturn" style="position:fixed; right: 10px; bottom: 100px; width:40px; height: 40px; z-index: 1001; border: 1px solid #30b4eb; border-radius: 30px; padding: 8px;" src="{{ url_for('static', filename='img/return.png') }}" />
+    <img id="_gototop" style="position:fixed; right: 10px; bottom: 55px; width:40px; height: 40px; z-index: 1001; border: 1px solid #30b4eb; border-radius: 30px; padding: 8px;" src="{{ url_for('static', filename='img/top.png') }}" />
+    <img id="_swich_left_nav" style="position:fixed; bottom: 10px; right: 10px; width:40px; height: 40px; z-index: 1001; border: 1px solid #30b4eb; border-radius: 30px; padding: 8px;" src="{{ url_for('static', filename='img/fullscreen.png') }}" />
+
+    <div id='_showtoast' style="display: none; position: fixed; bottom: 100px; z-index: 10000; width: 100%; text-align: center;">
+        <p style="display: inline-block; height: 30px; line-height: 30px; width: auto; padding: 0 15px; border-radius: 5px; background-color: rgba(0,0,0, 0.3); color: #fafafa; "></p>
+    </div>
+    <div id='_showloading' style="display: none; position: fixed; top: 0; z-index: 10000; width: 100%; height: 100%; text-align: center; background-color: rgba(0,0,0, 0.3);">
+        <img id='loading' src="{{ url_for('static', filename='img/loading.gif') }}" style="height: 30px; margin-top: 260px;">
+    </div>
+    {% for k,v in session.iteritems() %}
+    {% if v is not mapping %}
+    <input class="_session" type="hidden" id="_session_{{k}}" value="{{v}}" />
+    {% endif %}
+    {% endfor %}
+    <!-- ///////////通用模态框////////////// start -->
+    <div class="modal fade" id="common-modal" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="关闭"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">{% block commonmodal_title  %}通用模态框标题{% endblock commonmodal_title %}</h4>
+          </div>
+          <div class="modal-body">
+            {% block commonmodal_body  %}通用模态框内容{% endblock commonmodal_body %}
+          </div>
+          <div class="modal-footer">
+            {% block commonmodal_footer  %}
+            <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            {% endblock commonmodal_footer %}
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- ///////////通用模态框/////////////// end -->
+
+    <!-- ///////////全部在权限控制中定义的菜单地址  -->
+    <input type="hidden" id="all_menu_urls" value="{{session.all_menu_urls}}" />
+
+
+    <div id='_showphotos' style="display: none; position: fixed; top: 0; z-index: 10000; width: 100%; height: 100%; text-align: center; background-color: rgba(0,0,0, 0.8); padding: 100px;">
+        <div class="_photosalbum" style="display: flex; justify-content: center;">
+            <div id="modal-content" style="border-radius:10px;background: #ffffff; width: 500px;height: 400px;padding: 10px 0 10px 30px;text-align: left">
+
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

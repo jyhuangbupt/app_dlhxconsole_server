@@ -1,0 +1,308 @@
+{% extends "platform/index.html" %} {% block title %} {{ super() }}{% endblock title %} {% block head %} {{ super() }}
+
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('.role-search').each(function() {
+            $(this).click(function() {
+                window._role_search_name = $(this);
+                window._role_search_uid = window._role_search_name.prev();
+                window._role_search_left = document.body.scrollLeft;
+                window._role_search_top = document.body.scrollTop;
+                //展示搜索框
+                $('#role-search-dev').show();
+                $('#role-search-name').focus();
+            });
+        });
+        $('#role-search-cancel').click(function() {
+            $('#role-search-dev').hide();
+        });
+        $('#role-search-clear').click(function() {
+            window._role_search_name.val('');
+            window._role_search_uid.val('');
+            $('#role-search-dev').hide();
+            window._role_search_name.change();
+        });
+        $('#role-search-submit').click(function(e) {
+            e.preventDefault()
+            //删除上次查询记录
+            $('#role-search-list').empty();
+            //输入为空，忽略操作
+            var name = $(this).prev().val();
+            if (name == '') {
+                return
+            }
+            var url = "/{{session.appname}}/serviceteam/role/member/query/ajax"
+            var data = {
+                'name': name
+            }
+            ajax(url, data, function(data) {
+                for (var k in data) {
+                    for (var i in data.users) {
+                        //构造一个可点击的用户对象
+                        var user = data.users[i];
+                        var _oneuserdom = $('' +
+                            '<div class="list-group">' +
+                            '<input type="hidden" value="' + user.uid + '|' + user.name + '|' + user.nickname + '" />' +
+                            '<a href="#" class="list-group-item">' +
+                            '<h5 class="list-group-item-heading">姓名：' + user.name + '</h5>' +
+                            '<p class="list-group-item-text">昵称：' + user.nickname + '</p>' +
+                            '<p class="list-group-item-text">手机：' + user.phone + '</p>' +
+                            '</a>' +
+                            '</div>')
+                        _oneuserdom.click(function(e) {
+                            //此处必须阻止事件传递，不然窗口会默认滚动当前界面到该被点击的元素位置。
+                            e.preventDefault();
+                            var tmp = $(this).find('input').first().val();
+                            console.log(tmp);
+                            var uid = tmp.split('|')[0];
+                            var name = tmp.split('|')[1];
+                            var nickname = tmp.split('|')[2];
+                            window._role_search_name.val((name == null || name == '' || name == 'undefined') ? nickname : name);
+                            window._role_search_uid.val(uid);
+                            $('#role-search-dev').hide();
+                            window._role_search_name.focus();
+                            //滚动到原来位置
+                            window.scrollTo(window._role_search_left, window._role_search_top);
+                            window._role_search_name.change();
+                        });
+                        $('#role-search-list').append(_oneuserdom);
+                    }
+                }
+            });
+        });
+
+        // 添加/删除团队角色成员
+        $("#add-member").click(function(){
+            if($("#search-role-id").val()=='' || $("#search-member-id").val()==''){
+                $("#warning").show();
+                return;
+            }
+            var url = '/{{session.appname}}/serviceteam/role/member/add/ajax';
+            var data = {
+                'memberid': $("#search-member-id").val(),
+                'membername': $("#search-member-name").val(),
+                'roleid': $("#search-role-id").val(),
+                'teamid': "{{team.teamid}}"
+            }
+            ajax(url, data,function(data){
+                if(data.member != undefined){
+                    $("#search-member-id").val('');
+                    $("#search-member-name").val('');
+                    m = data.member[0]
+                    $("#"+data.member[0].roleid+" div").first().append('<div id="'+ m.stmid +'" class="col-md-2"><span class="label label-custom">' + m.membername + ' <a onclick="rm_member(\'' + m.stmid + '\')" href="#" style="color:red;font-size:16px">×</a></span></div>')
+                }
+
+            })
+        });
+
+        var editor = new Simditor({
+            textarea: $('#detail'),
+            toolbar: ['bold', 'italic', 'fontScale', 'underline', 'strikethrough', 'color', '|', 'ol', 'ul', 'blockquote', 'code', 'table', '|', 'link', 'image', '|', 'hr', 'indent', 'outdent', 'alignment'],
+            upload: {
+                url: '/{{session.appname}}/resource/image/simditor/upload/ajax',
+                fileKey: 'image-file',
+                params: {'tag': 'FALY用户服务团队'},
+                leaveConfirm: '正在上传图片中，确定离开当前页面？'
+            },
+            pasteImage: true,
+            autosave: 'editor-content'
+        });
+
+        //异步上传文件
+        $('#_uploadfile_btn').click(function() {
+            $('#uploadfile').click();
+        });
+        $('#uploadfile').AjaxFileUpload({
+            action: '/{{session.appname}}/resource/image/simditor/upload/ajax',
+            onChange: function(filename) {
+                showloading();
+            },
+            onComplete: function(filename, data) {
+                hideloading();
+                if (data.success == true) {
+                    $('#_uploadfile_value').val(data.file_path);
+                    $('#_uploadfile_preview').attr('src', data.file_path);
+                    showtoast(data.msg);
+                } else {
+                    showtoast(data.msg);
+                }
+            },
+        });
+    });
+    function rm_member(stmid){
+        var url = '/{{session.appname}}/serviceteam/role/member/delete/ajax'
+        data = {
+            'stmid': stmid
+        }
+        ajax(url, data, function(data){
+            if(data.member != undefined){
+                $("#"+stmid).fadeOut('slow', function(){
+                    $(this).remove()
+                });
+            }
+
+        })
+    }
+</script>
+<style type="text/css">
+    #accordion a {
+        text-decoration: none
+    }
+    .label-custom {
+        font-weight: normal;
+        font-size: 14px;
+        color: #000000;
+        border: 1px solid #ddd;
+        display: inline-block;
+        margin:3px;
+    }
+</style>
+{% endblock head %} {% block right_content %}
+<form class="form-horizontal" action="" method='post'>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">团队修改</h3>
+        </div>
+        <div class="panel-body">
+            {% if msg %}
+            <p style="color: red">{{msg}}</p>
+            {% endif %}
+
+            <div class="form-group">
+                <label class="col-sm-2 control-label">
+              <span style="color: red;">*</span>&nbsp;团队名称：
+            </label>
+                <div class="col-sm-5">
+                    <input type='text' class='form-control' name='name' value="{{form.name or team.name}}" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-sm-2 control-label">团队标语：</label>
+                <div class="col-sm-5">
+                    <input type='text' class='form-control' name='slogan' value="{{form.slogan or team.slogan}}">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-sm-2 control-label">团队负责人：</label>
+                <div class="col-sm-5">
+                    <input type="hidden" name="manageruid" value="{{form.manageruid or team.manager.get('uid') or ''}}">
+                    <input type="text" name="manager" class="form-control user-search2" value="{{form.manager or team.manager.get('name') or ''}}" placeholder="负责人姓名">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-sm-2 control-label">团队LOGO</label>
+                <div class="col-sm-5" style="position: relative;">
+                    <div class="input-group">
+                        <input type="text" class="form-control" name="logourl" id='_uploadfile_value' value="{{ form.logourl or team.logourl or '' }}" />
+                        <span class="input-group-btn">
+                          <button class="btn btn-success" type="button" id='_uploadfile_btn'>+</button>
+                          <input style="opacity: 0;" type='file' id="uploadfile" name='image-file' accept="image/jpeg,image/png">
+                        </span>
+                    </div>
+                    <img style="width: 200px;" id='_uploadfile_preview' src="{{ form.logourl or team.logourl }}" />
+                </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label">团队详情</label>
+              <div class="col-sm-5">
+                  <textarea id='detail' name='detail' placeholder="团队详情">{{ form.detail or team.detail or '' }}</textarea>
+              </div>
+            </div>
+            <div class="form-group">
+                <div class="col-xs-offset-3">
+                    <button type="submit" id="savebtn" class="btn btn-success">保存</button>
+                </div>
+            </div>
+        </div>
+        <div class="panel-heading">
+            <h3 class="panel-title">团队成员管理</h3>
+        </div>
+        <div class="panel-body">
+            <div class='row' style="margin: 0">
+                <div class='col-md-8' style="padding: 0">
+                    <form id='add-member-form' class="form-inline" action="" method='post'>
+                        <div class="form-group">
+                            <div class="form-group">
+                                <div class="col-md-2">
+                                    <select class='form-control' id="search-role-id" name='role'>
+                                      <option value=''>---角色---</option>
+                                      {% for roleid,name in rdict.items() %}
+                                        {% if form.roleid == roleid %}
+                                        <option value="{{roleid}}" selected>{{name}}</option>
+                                        {% else %}
+                                        <option value="{{roleid}}">{{name}}</option>
+                                        {% endif %}
+                                      {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-2" >
+                                    <input type="hidden" id="search-member-id" name="target_uid" value="{{form.uid or ''}}">
+                                    <input type="text" id="search-member-name" name="membername" class="form-control role-search" value="" placeholder="用户名">
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" id="add-member" class="btn btn-success">+&nbsp添加</button>
+                                </div>
+
+                            </div>
+                            <div style="border-bottom:1px dashed #000;"><p id="warning" style="display:none;color:red">角色与用户名必填！</p></div>
+                        </div>
+
+                    </form>
+
+                    <div class="panel-group" id="accordion">
+                        {% for roleid, name in rdict.items()%}
+                            <div class="panel panel-default">
+                                <div style="background:#03a9f4;color:#ffffff" class="panel-heading">
+                                    <h4 class="panel-title">
+                                        <a data-toggle="collapse" data-parent="#accordion"
+                                           href="#{{ roleid }}">
+                                            <div style="width:100%;">
+                                                {{ name }}
+                                            </div>
+                                        </a>
+                                    </h4>
+                                </div>
+                                <div id="{{ roleid }}" class="panel-collapse collapse in">
+                                    <div class="panel-body">
+                                        {% for m in members %}
+                                            {% if m.roleid == roleid %}
+                                                <div id="{{m.stmid}}" class="col-md-2">
+                                                    <span class="label label-custom ">{{m.membername}} <a onclick="rm_member('{{m.stmid}}')" href="#" style="color:red;font-size:16px">×</a></span>
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+        </div>
+    </div>
+
+</form>
+
+<div id="role-search-dev" class="container-fluid" style="position: fixed; top: 0; left: 0; z-index: 1000; width: 100%; height: 100%; background:rgba(0, 0, 0, 0.8); display: none;">
+    <div class='.container-fluid' style="width: 90%; min-height: 80%; margin-top: 5%; margin-left: 5%; background-color: #fafafa; padding: 10px;">
+        <div class='row'>
+            <div class='col-md-8'>
+                <form id='query-form' class="form-inline" method='post'>
+                    <div class="form-group">
+                        <input id="role-search-name" type="text" class="form-control" placeholder="姓名/昵称/11位手机号/用户ID" name='name'>
+                        <button type="button" id="role-search-submit" class="btn btn-success">查询</button>
+                        <button type="button" id="role-search-cancel" class="btn btn-success">取消</button>
+                        <button type="button" id="role-search-clear" class="btn btn-success">清空</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div id="role-search-list" class='row' style='margin-top: 20px;'></div>
+    </div>
+</div>
+
+{% endblock right_content %}

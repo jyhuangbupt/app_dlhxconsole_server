@@ -1,0 +1,122 @@
+{% extends "platform/index.html" %}
+{% block title %}{{ super() }}{% endblock title %}
+{% block head %}
+    {{ super() }}
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('.clickUser').click(function () {
+                console.log('click')
+                    var uid = $(this).find('input:first').val();
+                    window.location.href = "/{{session.appname}}/platform/user/detail?target_uid=" + uid;
+                });
+            $('#user-export').click(function() {
+                showloading();
+                var name = $('#name').val()
+                var is_deleted = $('#is_deleted').val()
+                var is_subscribe_miniapp = $('#is_subscribe_miniapp').val()
+                var vip_type= $('#vip_type').val()
+                var next_page = $('#next_page').val()
+               var href = '/{{ session.appname }}/platform/user/download?name='+name+'&is_deleted='+is_deleted+'&is_subscribe_miniapp='+is_subscribe_miniapp+'&vip_type='+vip_type+'&next_page='+next_page;
+               $('#export').attr('href',href);
+               $('#export')[0].click()
+               setTimeout(function () {
+                   hideloading();
+               },2000)
+            });
+        });
+
+    </script>
+{% endblock head %}
+
+{% block right_content %}
+    <div class='.container-fluid'>
+        <div class='row' style="margin: 0">
+            <div class='col-md-12' style="padding: 0">
+                <form id='query-form' class="form-inline" action="/{{ session.appname }}/platform/user/query"
+                      method='post'>
+                    <div class="form-group">
+
+                        <input class='form-control' type='text' id="name" name='name' value="{{ form.name or '' }}"
+                               placeholder="姓名/微信昵称/11位手机号">
+                        <select class="form-control" id="is_subscribe_miniapp" name='is_subscribe_miniapp'>
+                            <option value="">---小程序是否注册---</option>
+                            <option value="{{True}}">已注册</option>
+                            <option value="{{False}}">未注册</option>
+                        </select>
+                        <select class="form-control" id="is_deleted" name='is_deleted'>
+                            <option value="">---会员是否有效---</option>
+                            <option value="{{False}}">有效会员</option>
+                            <option value="{{True}}">无效会员</option>
+                        </select>
+                        <input type="hidden" name='next_page' id='next_page' value="{{ form.next_page or 1 }}"/>
+                    </div>
+                    <button type="submit" class="btn btn-default" style="background: #370307;color:#fff;text-shadow: none;">查询</button>
+                    <button type="button" id="user-export" class="btn btn-default">导出会员</button>
+                    <a style="display: none" id="export" class="btn btn-default">导出会员</a>
+                    <a href="/{{session.appname}}/platform/user/create" class="btn btn-default">创建会员</a>
+                    <a class="btn btn-default" href="/{{session.appname}}/platform/user/upload">批量创建/更新会员</a>
+                </form>
+
+            </div>
+        </div>
+        <div clas='row' style='margin-top: 20px;'>
+            <div class='col-md-12' style="padding-left: 0">
+                <table class="table table-bordered table-condensed table-hover">
+                    <tbody>
+                    {# 遍历展示用户列表 #}
+                    {% for user in users %}
+                        {% if user.info %}
+                            <tr>
+                                <td class="clickUser" style="position: relative; ">
+                                    <input type="hidden" value="{{ user.uid }}"/>
+                                    <img style="width: 32px; position: absolute; right: 10px; top: 35%; "
+                                         src="{{ url_for('static', filename='img/right.png') }}"/>
+                                    <b><span
+                                            style="display: block; border: 1px solid #ccc; width: 20px; height: 20px; border-radius: 10px; line-height: 20px; text-align: center; margin-bottom: 5px;">{{ loop.index + ((form.next_page or 1) - 1) * 10 }}</span></b>
+                                    <img src="{{ user.info.avatar or 'https://images.buddydc.com/rs/imgs/1560942469425_798debc6928211e9b20e00163e1237df.png' }}" style="width: 40px; margin-right: 10px;">
+                                    <span>{{ user.info.name or user.info.nickname }} {{ (user.info.nickname) if user.info.nickname else '' }}</span><br>
+                                    <b>手机：</b><span>{{ user.info.phone }}</span><br>
+                                    <b>小程序注册：</b>
+                                    {% if user.is_subscribe_miniapp=='true' %}
+                                        <span style="color:green">已注册</span>
+                                    {% else %}
+                                        <span style="color:red">未注册</span>
+                                    {% endif %}
+                                    <br>
+                                    <b>会员是否有效：</b>
+                                    {% if user.is_deleted == 'true' %}
+                                        <span style="color:red">无效会员</span>
+                                    {% else %}
+                                        <span style="color:green">有效会员</span>
+                                    {% endif %}
+                                    <br>
+                                    <b>备注：</b><span>{{ user.info.note or '无' }}</span><br>
+                                    {% for vip in user.vips %}
+                                        <b>{{ vip.name }}：</b><span>剩余{{vip.num}}份</span><br>
+                                    {% endfor %}
+                                </td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                    </tbody>
+                </table>
+                共{{ total_pages }}页，共{{ total_count }}条
+                <div class=row>
+                    <div class='col-md-12'>
+                        <nav>
+                            <ul class="pager">
+                                {% if page > 1 %}
+                                    <li><a href="#" id='to_previous_page'>上一页</a></li>
+                                {% endif %}
+                                <li>{{ page or 1 }}</li>
+                                {% if page < total_pages %}
+                                    <li><a href="#" id='to_next_page'>下一页</a></li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock right_content %}

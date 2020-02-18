@@ -1,0 +1,66 @@
+{% extends "activity/index.html" %}
+{% block title %} {{ super() }}{% endblock title %}
+
+{% block head %}
+    {{ super() }}
+    <script type="text/javascript">
+        $(document).ready(function () {
+           $('.function').each(function () {
+               $(this).click(function () {
+                   event.stopPropagation();
+               })
+           })
+        });
+    </script>
+    <style type="text/css">
+    </style>
+{% endblock head %}
+{% block right_content %}
+    <ul class="nav nav-tabs" style="margin-bottom: 30px;margin-top: 20px">
+      <li role="presentation" class="active"><a href="{{'/%s/activity/query' % (session.appname)}}">报名用户</a></li>
+    </ul>
+    <div class='.container-fluid'>
+        <div class='row' style="margin: 0">
+
+        </div>
+        <div class='row' style='margin-top: 20px;width: 450px;'>
+            <div class='col-md-12' style="">
+                    {% for user in users %}
+                        <div id="user-{{user.userid}}" class='card container-vertical-top' style="align-items: flex-start; padding: 10px 0;overflow: hidden;position: relative">
+                            <div style="display: flex;flex-direction: row;justify-content: flex-start">
+                                <img style="width: 50px;height: 50px;" src="{{ user.user.info.avatar }}"/>
+                                <div style="line-height: 40px; margin-left: 15px;display: flex;flex-direction: column;justify-content: space-around">
+                                    <h4>{{ user.user.info.name or user.user.info.nickname }}</h4>
+                                    <p>{{ user.user.info.phone}}</p>
+                                </div>
+                            </div>
+                            <div>
+                                <p style="color: #777;">
+                                    报名人数：{{user.count}}
+                                </p>
+                                <p style="color: #777;">
+                                    报名时间：{{user.ct_ui}}
+                                </p>
+                                {% if user.status == 'normal' %}
+                                <p style="color: green;">
+                                    状态：报名成功
+                                </p>
+                                {% elif user.status == 'cancel' %}
+                                    <p style="color: red;">
+                                        状态：用户取消
+                                    </p>
+                                {% else %}
+                                    <p style="color: red;">
+                                        状态：运营取消
+                                    </p>
+                                {% endif %}
+                            </div>
+
+                        </div>
+                    {% endfor %}
+                <br>
+                <br>
+            </div>
+        </div>
+    </div>
+{% endblock right_content %}

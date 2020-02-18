@@ -1,0 +1,53 @@
+{% extends "base_2.html" %}
+{% block title %} {{ super() }}{% endblock title %}
+
+{% block head %}
+    {{ super() }}
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $('#_left_nav').hide();
+        });
+    </script>
+    <style type="text/css">
+    </style>
+{% endblock head %}
+
+{% block left_content %}
+{% endblock left_content%}
+
+{% block right_content %}
+    <div class='.container-fluid'>
+        <div class='row' style="margin: 0">
+            <div class='col-md-12' style="padding: 0">
+                 <form  id='query-form' class="form-inline" action={{ '/%s/common/user/select?redirect_url=%s?%s' % (session.appname, form.redirect_url, form.redirect_url_query_string) }} method='post'>
+                  <div class="form-group">
+                    <input type="text" class="form-control" placeholder="姓名/昵称/11位手机号/用户ID" name='name' value={{form.name or ''}} >
+
+                    {# {% if '2001' in session.bbsuser.identities %}
+                      {% if form.query_all and 'yes' in form.query_all %}
+                      <input type="checkbox" name="query_all" value="yes" checked>全部
+                      {% else %}
+                      <input type="checkbox" name="query_all" value="yes">全部
+                      {% endif %}
+                    {% endif %} #}
+
+                    <input type="hidden" name='next_page' id='next_page' value="{{form.next_page or 1}}" />
+                  </div>
+                  <button type="submit" class="btn btn-success">查询</button>
+                </form>
+            </div>
+        </div>
+        <div clas='row' style='margin-top: 20px;'>
+            {% for u in users %}
+                <div class="list-group">
+                  <a href="/{{session.appname}}{{form.redirect_url}}?{{form.redirect_url_query_string}}&target_uid={{u.uid}}" class="list-group-item">
+                    <img src="{{u.avatar}}" style="width: 50px; float: left; margin-right: 10px;">
+                    <h5 class="list-group-item-heading"">姓名：{{u.name}}</h5>
+                    <p class="list-group-item-text">昵称：{{u.nickname}}</p>
+                    <p class="list-group-item-text">手机：{{u.phone}}</p>
+                  </a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock right_content %}

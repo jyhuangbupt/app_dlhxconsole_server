@@ -1,0 +1,78 @@
+main:
+  prefix: dlhx
+  deploy: pro
+  appname: dlhx
+  appname_cn: '东联和信'
+  appname_cn_long: '东联和信学校'
+  scheme: https
+  domain: api.dlhexin.com.cn
+  appids: [11]
+  debugmode: true
+  appdownloadurl: ''
+  appicon_large: ''
+  appicon_small: ''
+  h5appname: dlhx
+  h5scheme: https
+  h5domain: h5.dlhexin.com.cn
+  loggers:
+    default: {'level': 'debug', 'handlers': ['stdout']}
+  request:
+    sigkeys:
+      '1': '528fc508a5327d31e0738ae1dd9c93ac'
+  redissession:
+    # 可选项，默认使用flask.session
+    # server-side session 方案，使用flask-session中的redis session方案
+    session_redis: redis://12345qwertRedis@localhost:6379/10
+
+  redis:
+    instances:
+      - redis://12345qwertRedis@localhost:6379/1
+      - redis://12345qwertRedis@localhost:6379/1
+  rds:
+    poolconfig: {'pool_size': 30}
+    binds:
+      app: mysql+pymysql://dlhx:12345qwertRds@localhost:3306/dlhx?charset=utf8mb4
+      user: mysql+pymysql://dlhx:12345qwertRds@localhost:3306/dlhx?charset=utf8mb4
+      dlhx: mysql+pymysql://dlhx:12345qwertRds@localhost:3306/dlhx?charset=utf8mb4
+      mm: mysql+pymysql://dlhx:12345qwertRds@localhost:3306/dlhx?charset=utf8mb4
+      crm: mysql+pymysql://dlhx:12345qwertRds@localhost:3306/dlhx?charset=utf8mb4
+      sns: mysql+pymysql://dlhx:12345qwertRds@localhost:3306/dlhx?charset=utf8mb4
+      resource: mysql+pymysql://dlhx:12345qwertRds@localhost:3306/dlhx?charset=utf8mb4
+
+  qiyehao:
+    groups:
+#      order: {'agentid': 1000002, 'totag': '1', 'corpid': 'ww29e6006d0bc04e12','secret':'WG1tJ6aW0ff_EiFbNhyD4cwFZoqRBU1-8t6517vVZZ8'}
+      datas: {'agentid': '', 'totag': '', 'corpid': '','secret':''}
+  aliyun:
+      oss: {'endpoint': 'oss-cn-beijing-internal.aliyuncs.com', 'urlscheme': 'https', 'urldomain': 'images.buddydc.com', 'accessid': 'LTAIsOyXPz81pZDw', 'accesskey': 'ppHQNtW0kxdHtul9fzp4LPDnAz1ntT'}
+
+
+
+user:
+  signup_account_type:
+    - 'weixin'
+    - 'weixinminiapp'
+    - 'phone'
+#  chuanglan_sms: {'account': 'N4160545', 'password': '2RErstgqNy5378', 'host': 'sms.253.com'}
+  chuanglan_sms: {'account': 'N0470776', 'password': 'ZQEgXhI4xb3a08', 'host': 'smssh1.253.com'}
+  third_accounts:
+    phone:
+      phone: {'name': '手机'}
+    weixin:
+      weixin: {}
+    weixinminiapp:
+      weixinminiapp: {'name':'东联和信学校', 'appid': 'wx2936898583a63172', 'secret': 'bedf83217ded965ce5d17bcdb21d8762'} #小程序
+  weixin_mp:
+    token: 71ad2c1e90a5ca43a50b2d8671cf4c03
+    originid: gh_f36a1b3c78f3
+    domain: h5.dlhexin.com.cn
+    slogan: "东联和信学校"
+  whitelist:
+    - '18810541701'
+    - '18810541702'
+tasklet2s:
+#  - {'name': '每日信息统计','package':'xdock_dlhx.lib.tasklet2',  'cls': 'OrderDataDailyTask',  'method': 'run_daily_data_task', 'args': [], 'kwargs': {}, 'time': '9 00'}
+
+
+basicdata:
+  district: !import local:district.json

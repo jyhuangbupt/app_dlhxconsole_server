@@ -1,0 +1,105 @@
+{% extends "user/index.html" %}
+{% block title %} {{ super() }}{% endblock title %}
+
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" type="text/css" media="screen" href={{ url_for('static', filename='css/bootstrap-datetimepicker.min.css') }} />
+    <script src={{ url_for('static', filename='js/bootstrap-datetimepicker.min.js') }}></script>
+    <script src={{ url_for('static', filename='js/bootstrap-datetimepicker.zh-CN.js') }}></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $('#birthday').datetimepicker({
+                minView: "month", //选择日期后，不会再跳转去选择时分秒
+                format: "yyyy-mm-dd", //选择日期后，文本框显示的日期格式
+                language: 'zh-CN', //汉化
+                endDate : new Date(),
+                todayBtn: true,
+                autoclose:true //选择日期后自动关闭
+            });
+        });
+    </script>
+    <style type="text/css">
+    </style>
+{% endblock head %}
+
+{% block right_content %}
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">用户基本信息修改</h3>
+      </div>
+      <div class="panel-body">
+          {% if msg %}
+          <p style="color: red">{{msg}}</p>
+          {% endif %}
+
+          <form class="form-horizontal" action="/{{session.appname}}/platform/user/update?entry=mine" method='post'>
+          <input type="hidden" name="target_uid" value="{{user.uid}}">
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label">
+              <span style="color: red;">*</span>&nbsp;手机号
+            </label>
+            <div class="col-sm-5">
+                <input type='text' class='form-control' name='phone' value="{{form.phone or user.phone}}" >
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label">
+              <span style="color: red;">*</span>&nbsp;姓名
+            </label>
+            <div class="col-sm-5">
+                <input type='text' class='form-control' name='name' value="{{form.name or user.name}}" required >
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label">用户级别</label>
+            <div class="col-sm-5">
+                <select class='form-control' name='levelid'>
+                    {% for levelid,l in levels.iteritems() %}
+                        {% if (form.levelid or user.levelid) == levelid %}
+                    <option value="{{levelid}}" selected>{{l.name}}</option>
+                        {% else %}
+                    <option value="{{levelid}}">{{l.name}}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+                {# <input type='text' class='form-control' name='levelid' value="{{form.name or user.name}}" required > #}
+            </div>
+          </div>
+
+          <div class="form-group">
+              <label class="col-sm-2 control-label">出生日期</label>
+              <div class="col-sm-5">
+                  <input type="text" id="birthday" name="birthday" class="form-control" value="{{ form.birthday or user.birthday }}">
+              </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label">微信号</label>
+            <div class="col-sm-5">
+                <input type='text' class='form-control' name='weixinid' value="{{form.weixinid or user.weixinid}}" >
+                <span class='help-block'>可填项，内部员工可填，用户在微信自定义的（仅能定义一次）微信号。</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label">用户基本信息</label>
+            <div class="col-sm-5">
+                <textarea class='form-control' name='note' rows=5>{{form.note or user.note}}</textarea>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label"></label>
+            <div class="col-sm-2">
+              <button type="submit" class="btn btn-success btn-block">保存</button>
+            </div>
+          </div>
+          </form>
+
+      </div>
+    </div>
+
+{% endblock right_content %}

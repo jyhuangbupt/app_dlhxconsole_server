@@ -1,0 +1,360 @@
+{% extends "user/index.html" %} {% block title %} {{ super() }}{% endblock title %} {% block head %} {{ super() }}
+<link rel="stylesheet" type="text/css" media="screen" href={{url_for( 'static', filename='css/timeline-style.css' )}} />
+
+
+<script type="text/javascript">
+    $(document).ready(function() {});
+</script>
+<style type="text/css">
+    .file-preview-frame {
+        display: table;
+        margin: 8px;
+        height: 160px;
+        border: 1px solid #ddd;
+        box-shadow: 1px 1px 5px 0px #a2958a;
+        padding: 6px;
+        float: left;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .file-preview-frame:hover {
+        box-shadow: 3px 3px 5px 0px #333;
+    }
+
+    .file {
+        position: relative;
+        display: inline-block;
+        background: #428bca;
+        border: 1px solid #357ebd;
+        border-radius: 4px;
+        padding: 4px 12px;
+        overflow: hidden;
+        color: #fff;
+        font-size: 15px;
+        text-decoration: none;
+        text-indent: 0;
+        line-height: 20px;
+    }
+
+    .file input {
+        position: absolute;
+        font-size: 100px;
+        right: 0;
+        top: 0;
+        opacity: 0;
+    }
+
+    .file:hover {
+        background: #3276b1;
+        border-color: #285e8e;
+        color: #fff;
+        text-decoration: none;
+    }
+
+    .record-img-preview {
+        width: 100px;
+        height: 100px;
+    }
+
+    .record-status {
+        position: absolute;
+        top: 45px;
+        right: 10px;
+        font-size: 18px;
+    }
+</style>
+{% endblock head %} {% block right_content %}
+<div class="panel-group" id="accordion">
+    <form class="form-horizontal" action="/{{session.appname}}/charmlog/update?entry=mine&logid={{charmlog.logid}}" method='post'>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                    <a data-toggle="collapse" style="text-decoration:none;" data-parent="#accordion"
+                       href="#information">
+                        <div style="width:100%;">
+                            <h3 class="panel-title">FALY魅力管理日记修改（点我隐藏/展开）</h3>
+                        </div>
+                    </a>
+                </h4>
+            </div>
+            <div id="information" class="panel-collapse collapse in">
+                <div class="panel-body">
+                    {% if msg %}
+                    <p style="color: red">{{msg}}</p>
+                    {% endif %}
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">日记名称</label>
+                        <div class="col-sm-5">
+                            <input type='text' class='form-control' name='title' value="{{form.title or charmlog.title or ''}}" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label" style="padding-top: 0;">FALY用户</label>
+                        <div class="col-sm-5">
+                            <input type="hidden" id="target_user_id" name="target_uid" value="{{form.uid or charmlog.uid or ''}}" required>
+                            <input class="form-control" type="text" name='name' value="{{form.name or charmlog.user.get('name') or charmlog.user.get('nickname') or ''}}" placeholder="姓名/昵称/手机号/ID" readonly>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">操作项目</label>
+                        <div class="col-sm-5">
+                            <input type='text' class='form-control' name='project' value="{{form.project or charmlog.project or ''}}" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">服务门店</label>
+                        <input type="hidden" name="orgid" value="{{charmlog.orgid}}">
+                        <div class="col-sm-5">
+                            <span>{{ charmlog.organization.orgname }}</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">服务顾问</label>
+                        <div class="col-sm-5">
+                            <input type="hidden" id="target_user_id" name="counseloruid" value="{{form.counseloruid or charmlog.counseloruid or ''}}">
+                            <input class="form-control user-search2" type="text" name='counselor' value="{{form.counselor or charmlog.counselor.get('name') or charmlog.counselor.get('nickname') or ''}}" placeholder="姓名/昵称/手机号/ID" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">背景</label>
+                        <div class="col-sm-5" style="position: relative;">
+                            <div class="input-group">
+                                <input type="text" class="form-control" name="background" value="{{form.background or charmlog.background or ''}}" />
+                                <span class="input-group-btn">
+                                <button class="btn btn-success buddy_uploadimage_btn" type="button" >+</button>
+                                <input class="buddy_uploadimage_input" style="opacity: 0;" type='file' name='image-file' accept="image/jpeg,image/png">
+                              </span>
+                            </div>
+                            <img style="width: 200px;" src="{{form.background or charmlog.background or ''}}" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label" style="padding-top: 0;">日记简介</label>
+                        <div class="col-sm-5">
+                            <textarea id='_charmlog_before' name='detail' class="form-control" style="width:100%" rows="5" placeholder="日记简介">{{form.detail or charmlog.detail or ''}}</textarea>
+                        </div>
+                    </div>
+
+                    <div id="uploadfile-div" class="form-group">
+                        <label class="col-sm-2 control-label" style="padding-top: 0;">术前照片</label>
+                        <div class="file">
+                            <i class="glyphicon glyphicon-folder-open"></i>&nbsp<span>上传图片</span>
+                            <input type="file" id="uploadfile" name="uploadfile" onchange="upload('{{charmlog.logid}}', this.files)" value="">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        {% if charmlog.imgurls %} {% for url in charmlog.imgurls %}
+                        <!-- <label class="col-sm-2 control-label" style="padding-top: 0;"></label> -->
+                        <div class="col-md-4 file-preview-frame">
+                            <img data-toggle="modal" data-target="#imgModal" data-whatever='{"imgurl":"{{url}}"}' src="{{url}}@!falythumbnail" alt="图片加载失败">
+                            <div tabindex="-1">
+                                <div image-id="{{ url }}" data-logid="{{charmlog.logid}}" class="kv-file-remove btn btn-xs btn-default" style="float:right">
+                                    <i style="font-size:16px" class="glyphicon glyphicon-trash text-danger"></i>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %} {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label"></label>
+                        <div class="col-sm-2">
+                            <button type="submit" class="btn btn-success btn-block">保存</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+    <div class="panel panel-default">
+        <div class="panel-heading" style="position: relative;font-size:18px">我的日记</div>
+        <div class="panel-body">
+            <form class="form-inline" action="/{{session.appname}}/charmlog/update" method='get'>
+                <div class="form-group">
+                    <input type="hidden" name="logid" value="{{charmlog.logid}}">
+                    <input type="hidden" name="entry" value="mine">
+                    <select class="form-control" placeholder="状态" name='status'>
+                        <option value=''>---状态---</option>
+                        {% for status, name in checkstatus.iteritems() %}
+                            {% if form.status == status %}
+                                <option value={{status}} selected='selected'>{{name}}</option>
+                            {% else %}
+                                <option value={{status}}>{{name}}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-success">查询</button>
+                <a class="btn btn-default" style="background:#03a9f4;color:#ffffff" href="/{{session.appname}}/charmlog/record/create?entry=mine&logid={{charmlog.logid}}">新增日记</a>
+
+            </form>
+            <div style="border:1px solid #f5f5f5;margin-top:10px"></div>
+            <section id="cd-timeline" class="cd-container">
+                {% for ct in ctdates %}
+                <span id="{{ct}}" style="margin-left:25px">{{ct}}</span>
+                <div class="cd-timeline-block">
+                    <div class="cd-timeline-img cd-picture"></div>
+                    <div class="same-date-record">
+                        {% for r in records %} {% if r.ctdate==ct %}
+                        <div class="cd-timeline-content">
+                            <h4>{{r.title}}</h4> {% if r.status == 'checking' %}
+                            <span style="color: blue;" class="record-status">{{checkstatus.get(r.status)}}</span> {% elif r.status == 'checked' %}
+                            <span style="color: green;" class="record-status">{{checkstatus.get(r.status)}}</span> {% elif r.status == 'sent' %}
+                            <span style="color: orange;" class="record-status">{{checkstatus.get(r.status)}}</span> {% else %}
+                            <span style="color: red;" class="record-status">{{checkstatus.get(r.status)}}</span> {% endif %}
+                            <b>简介：</b>
+                            <p style="font-size:14px">{{r.detail}}</p>
+                            <b>专家建议：</b>
+                            <p style="font-size:14px">{{r.suggestion}}</p>
+                            <!-- <a href="http://www.helloweba.com/view-blog-285.html" class="cd-read-more" target="_blank">阅读全文</a> -->
+                            <!-- <span class="cd-date">{{ct}}</span> -->
+                            {% if r.cover %}
+                            <div style="width:100px;height:100px" class="col-md-3 file-preview-frame">
+                                <img class="record-img-preview" data-toggle="modal" data-target="#imgModal" data-whatever='{"imgurl":"{{r.cover}}"}' src="{{r.cover}}" alt="不能显示该项">
+                                <div tabindex="-1">
+                                    <!-- <div data-logid="{{charmlog.logid}}" class="record-file-remove btn btn-xs btn-default" style="float:right"><i style="font-size:16px" class="glyphicon glyphicon-trash text-danger"></i></div> -->
+                                </div>
+                            </div>
+                            {% endif %} {% if r.imgurls %} {% for url in r.imgurls %}
+                            <div style="width:100px;height:100px" class="col-md-3 file-preview-frame">
+                                <img class="record-img-preview" data-toggle="modal" data-target="#imgModal" data-whatever='{"imgurl":"{{url}}"}' src="{{url}}" alt="不能显示该项">
+                                <div tabindex="-1">
+                                    <!-- <div data-logid="{{charmlog.logid}}" class="record-file-remove btn btn-xs btn-default" style="float:right"><i style="font-size:16px" class="glyphicon glyphicon-trash text-danger"></i></div> -->
+                                </div>
+                            </div>
+                            {% endfor %} {% endif %}
+                            <div style="clear:left;display:block">
+                                {% if charmlog.status=='sent' %} {% if r.status == 'unchecked' %}
+                                <a style="margin-right:5px" class="confirm-op buddy-btn-a" href={{ '/%s/charmlog/record/checking?recordid=%s' % (session.appname, r.recordid) }}>提交审核</a> {% elif r.status == 'checking' %}
+                                <a style="margin-right:5px" class="confirm-op buddy-btn-a" href={{ '/%s/charmlog/record/checked?recordid=%s' % (session.appname, r.recordid) }}>审核</a> {% elif r.status == 'checked' %}
+                                <a style="margin-right:5px" class="confirm-op buddy-btn-a" href={{ '/%s/charmlog/record/sent?recordid=%s' % (session.appname, r.recordid) }}>发送</a> {% endif %} {% endif %}
+                                <a href="/{{session.appname}}/charmlog/record/update?recordid={{r.recordid}}" class="confirm-op buddy-btn-a">修改</a>
+                                <a href="/{{session.appname}}/charmlog/record/delete?recordid={{r.recordid}}" class="confirm-op buddy-btn-a">删除</a>
+
+                            </div>
+
+                        </div>
+                        <br> {% endif %} {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </section>
+
+        </div>
+    </div>
+
+    <div class="modal fade" id="imgModal" tabindex="-1" role="dialog" aria-labelledby="imgModalLabel">
+        <div class="modal-dialog" style="" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span></button>
+                </div>
+                <div style="width:100%;max-height:700px;overflow:scroll;text-align:center">
+                    <img id="view-img" src="" alt="不能显示该项" style="width:100%">
+                </div>
+                <div class="modal-footer" style="text-align: center">
+                    <button class="btn btn-default" type="button" id="prev-img">上一张</button>
+                    <button class="btn btn-default" type="button" id="next-img">下一张</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        $('#imgModal').on('show.bs.modal', function(event) {
+            var imgbtn = $(event.relatedTarget) // 触发事件的按钮
+            var data = imgbtn.data('whatever') // 解析出data-whatever内容
+            var modal = $(this)
+            modal.find("#view-img").attr('src', data.imgurl)
+            $("#next-img").click(function() {
+                if (imgbtn.parent().next().attr("class") == "col-md-4 file-preview-frame" || imgbtn.parent().next().attr("class") == "col-md-3 file-preview-frame") {
+                    modal.find("#view-img").attr('src', imgbtn.parent().next().find("img").data("whatever").imgurl)
+                    imgbtn = imgbtn.parent().next().find("img")
+                }
+            });
+            $("#prev-img").click(function() {
+                if (imgbtn.parent().prev().attr("class") == "col-md-4 file-preview-frame" || imgbtn.parent().prev().attr("class") == "col-md-3 file-preview-frame") {
+                    modal.find("#view-img").attr('src', imgbtn.parent().prev().find("img").data("whatever").imgurl)
+                    imgbtn = imgbtn.parent().prev().find("img")
+                }
+            })
+        });
+        $(".kv-file-remove").bind('click', function() {
+            var event = $(this)
+            var url = "/{{session.appname}}/charmlog/file/delete/ajax"
+            var data = {
+                'logid': $(this).attr('data-logid'),
+                'imgid': $(this).attr('image-id')
+            }
+            ajax(url, data, function(data) {
+                if (data.success) {
+                    event.parent().parent().fadeOut('slow', function() {
+                        $(this).remove();
+                    })
+                }
+            })
+        });
+
+        function upload(logid, files) {
+            if (files[0] == undefined) {
+                return
+            }
+            var url = '/{{session.appname}}/charmlog/file/upload/ajax'
+
+            var imgDate = files[0].lastModifiedDate
+            var img_ct = imgDate.getFullYear() + '-' + imgDate.getMonth() + '-' + imgDate.getDay() + ' ' + imgDate.getHours() + ':' + imgDate.getMinutes() + ':' + imgDate.getSeconds();
+            var formData = new FormData()
+            formData.append("logid", logid)
+            formData.append("uploadfile", files[0])
+            $.ajax({
+                url: url,
+                data: formData,
+                type: 'post',
+                /**
+                 *必须false才会自动加上正确的Content-Type
+                 */
+                contentType: false,
+                /**
+                 * 必须false才会避开jQuery对 formdata 的默认处理
+                 * XMLHttpRequest会对 formdata 进行正确的处理
+                 */
+                processData: false,
+                success: function(data) {
+                    var data = data.data
+                    var btnstr = '<div image-id="' + data.imgurl + '" data-logid="' + data.logid +
+                        '" class="kv-file-remove btn btn-xs btn-default" style="float:right"><i style="font-size:16px" class="glyphicon glyphicon-trash text-danger"></i></div>'
+                    $("#uploadfile-div").next().append(
+                        '<div class="col-md-4 file-preview-frame"><img data-toggle="modal" data-target="#imgModal" data-whatever=\'{"imgurl":"' + data.imgurl + '"}\' src="' + data.imgurl +
+                        '@!falythumbnail" alt="不能显示该项"><div tabindex="-1">' + btnstr + '</div></div>'
+                    );
+                    // $("#warningmsg").hide();
+                    $(".kv-file-remove").bind('click', function() {
+                        var event = $(this)
+                        var url = "/{{session.appname}}/charmlog/file/delete/ajax"
+                        var data = {
+                            'logid': $(this).attr('data-logid'),
+                            'imgid': $(this).attr('image-id')
+                        }
+                        ajax(url, data, function(data) {
+                            if (data.success) {
+                                event.parent().parent().fadeOut('slow', function() {
+                                    $(this).remove()
+                                })
+                            }
+                        })
+                    });
+                }
+            });
+        };
+    </script>
+    {% endblock right_content %}

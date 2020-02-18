@@ -1,0 +1,229 @@
+{% extends "user/index.html" %} {% block title %} {{ super() }}{% endblock title %} {% block head %} {{ super() }}
+<link rel="stylesheet" type="text/css" href={{ url_for('static', filename='css/font-awesome.css') }} />
+<link rel="stylesheet" type="text/css" href={{ url_for('static', filename='css/simditor.css') }} />
+<script src={{ url_for('static', filename='js/module.js') }} ></script>
+<script src={{ url_for('static', filename='js/hotkeys.js') }} ></script>
+<script src={{ url_for('static', filename='js/uploader.js') }} ></script>
+<script src={{ url_for('static', filename='js/simditor.js') }} ></script>
+<script src="https://static.buddydc.com/faly/js/simditor-dropzone.js"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $("#crm-btn-sub").click(function(){
+            if($("#record").val() == "" || $("#record").val() == undefined){
+                return
+            }
+            var url = "/{{session.appname}}/crm/marketrecord/create/ajax"
+            var data = {
+                "target_uid": "{{user.uid}}",
+                "recorderuid": "{{session.user.uid}}",
+                'content': $("#record").val()
+            }
+            $("#crm-btn-sub").attr("disabled","disabled");
+            ajax(url, data, function(data){
+                var str1 = '<div id="'+data.record.recordid+'" class="row record-div-line"><div class="form-group"><div class="col-sm-6"><img src="'+data.record.recorder.avatar+'" style="width: 40px; margin-right: 10px;"></img><span>'+data.record.recorder.name+'('+data.record.recorder.nickname+')</span></div>'
+                var str2 = '<div class="col-sm-9" style="margin-top:5px"><span style="font-size:14px">'+data.record.content+'</span><br><span style="color:#999">编辑于：'+data.record.ct_ui+'</span>&nbsp<br><a class="buddy-btn-a" style="" onclick="rmrecord(\''+data.record.recordid+'\')" href="#">删除</a></div></div></div>'
+                $("#record-div").prepend(str1+str2);
+                $(".simditor-body").text("");
+                $(".simditor-placeholder").css("display", "block");
+                $("#crm-btn-sub").removeAttr("disabled");
+                $("#toggle-tip").click();
+            })
+        });
+
+        new Simditor({
+            textarea: $('#record'),
+            toolbar: ['bold', 'italic', 'fontScale', 'underline', 'strikethrough', 'color', '|', 'ol', 'ul', 'blockquote', 'code', 'table', '|', 'link', 'image', '|', 'hr', 'indent', 'outdent', 'alignment'],
+            upload: {
+                url: '/{{session.appname}}/resource/image/simditor/upload/ajax',
+                fileKey: 'image-file',
+                params: {'tag': 'FALYCRM'},
+                leaveConfirm: '正在上传图片中，确定离开当前页面？'
+            },
+            pasteImage: true,
+            autosave: 'editor-content'
+        });
+        $("#toggle-tip").click(function(){
+            switch ($(this).attr('data-value')) {
+                case "0":
+                    $("#toggle-record").show();
+                    $(this).text("点我关闭");
+                    $(this).attr("data-value","1")
+                    break;
+                case "1":
+                    $("#toggle-record").hide();
+                    $(this).text("点我创建");
+                    $(this).attr("data-value","0")
+                    break;
+            }
+        })
+    });
+
+    function rmrecord(recordid){
+        if (recordid=='' || recordid == undefined){
+            return
+        }
+        var url = "/{{session.appname}}/crm/marketrecord/delete/ajax"
+        var data = {
+            'recordid': recordid
+        }
+        ajax(url, data, function(data){
+            if(data.status == 'ok'){
+                showtoast(data.msg)
+                $("#"+recordid).fadeOut('slow', function(){
+                    $(this).remove()
+                });
+            }
+        })
+    }
+</script>
+<style type="text/css">
+    .record-div-line {
+        border-bottom: 1px solid #d3d3d3;
+        margin-top:10px;
+        margin-bottom:10px
+    }
+    .toggle-tip {
+        text-decoration: none;
+        border: 1px solid #dddddd;
+        border-radius: 5px;
+        background: #03a9f4;
+        color: #fff;
+        cursor: pointer;
+        position: absolute;
+        right: 5px
+    }
+</style>
+{% endblock head %} {% block right_content %}
+<div class='.container-fluid'>
+    <div class='row' style="margin: 0">
+        <div class="panel panel-info">
+            <div class="panel-heading" style="position: relative;">用户基本信息</div>
+            <div class="panel-body">
+                <form class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label" style="padding-top: 0;"></label>
+                        <div class="col-sm-6">
+                            <img src="{{user.avatar}}" style="width: 40px; margin-right: 10px;"> UID：{{user.uid}}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label" style="padding-top: 0;"></label>
+                        <div class="col-sm-6">
+                            {{user.name}}{{'（%s）' % user.nickname if user.nickname else ''}} &nbsp;&nbsp;
+                            <span style="color: gray; font-size: 16px; ">{{levels.get(user.levelid).name if levels.get(user.levelid) else '-'}}</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label" style="padding-top: 0;">手机号认证
+                              {% if 'phone' in third_accounts %}
+                              <img style="width:20px;" src="https://static.buddydc.com/faly/img/success.png" >
+                              {% else %}
+                              <img style="width:20px;" src="https://static.buddydc.com/faly/img/failure.png" >
+                              {% endif %}
+                            </label>
+                        <div class="col-sm-6">
+                            {{third_accounts['phone'] if 'phone' in third_accounts else '未认证'}}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label" style="padding-top: 0;">身份证认证
+                              {% if 'chinaid' in third_accounts %}
+                              <img style="width:20px;" src="https://static.buddydc.com/faly/img/success.png" >
+                              {% else %}
+                              <img style="width:20px;" src="https://static.buddydc.com/faly/img/failure.png" >
+                              {% endif %}
+                            </label>
+                        <div class="col-sm-6">
+                            {{third_accounts['chinaid'] if 'chinaid' in third_accounts else '未认证'}}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label" style="padding-top: 0;">微信认证
+                              {% if 'weixin' in third_accounts %}
+                              <img style="width:20px;" src="https://static.buddydc.com/faly/img/success.png" >
+                              {% else %}
+                              <img style="width:20px;" src="https://static.buddydc.com/faly/img/failure.png" >
+                              {% endif %}
+                            </label>
+                        <div class="col-sm-6">
+                            {{'已认证 %s' % (user.weixinid or '') if 'weixin' in third_accounts else '未认证'}}
+                        </div>
+                    </div>
+
+
+                    {#
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label" style="padding-top: 0;">支付宝认证
+                              {% if 'alipay' in third_accounts %}
+                              <img style="width:20px;" src="{{url_for('static', filename='img/success.png')}}" >
+                              {% else %}
+                              <img style="width:20px;" src="{{url_for('static', filename='img/failure.png')}}" >
+                              {% endif %}
+                            </label>
+                        <div class="col-sm-6">
+                            {{third_accounts['alipay'] if 'alipay' in third_accounts else '未认证'}}
+                        </div>
+                    </div> #}
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label" style="padding-top: 0;">基本信息
+                            </label>
+                        <div class="col-sm-6">
+                            {{user.note}}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-sm-9">
+                            <a class="buddy-btn-a" href="/{{session.appname}}/platform/user/update?entry=mine&target_uid={{user.uid}}">修改</a>
+                            <a class="buddy-btn-a" href="/{{session.appname}}/utils/sms/send?entry=mine&target_uid={{user.uid}}">短信</a>
+                            <a class="buddy-btn-a" href="/{{session.appname}}/mm/coupon/couponpacket/query?target_uid={{user.uid}}">券包</a>
+                            <a class="buddy-btn-a" href="/{{session.appname}}/falylog/query?entry=mine&target_uid={{user.uid}}">体质分析报告</a>
+                            <a class="buddy-btn-a" href="/{{session.appname}}/charmlog/query?entry=mine&target_uid={{user.uid}}">形体日记</a>
+                            <a class="buddy-btn-a" href="/{{session.appname}}/healthage/outreport/query?entry=mine&userid={{user.uid}}">检测报告</a>
+                            <a class="buddy-btn-a" href="/{{session.appname}}/serviceteam/team/query?entry=mine&target_uid={{user.uid}}">服务团队</a>
+                            <a class="buddy-btn-a" href="/{{session.appname}}/serviceteam/staff/userteam/query?entry=mine&target_uid={{user.uid}}">自定义团队</a>
+                            <a class="buddy-btn-a" href="/{{session.appname}}/medicalshop/order/query?business=medicalshop&target_uid={{user.uid}}">订单</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="panel panel-default">
+            <div class="panel-heading" style="position: relative;font-size:18px">FALY·销售过程管理
+                <a id="toggle-tip" style="text-decoration:none;" data-value="0" class="toggle-tip">点我创建</a>
+            </div>
+            <div class="panel-body">
+                <div class="form-group">
+                    <div id="toggle-record" class="row" style="display:none">
+                        <div class="col-sm-10">
+                            <textarea id='record' name='detail' placeholder="填写记录..." ></textarea>
+                        </div>
+                        <div class="col-sm-2">
+                            <input id="crm-btn-sub" class="btn" style="color:#fff;width:70px;background:#03a9f4" type="button" value="添加">
+                        </div>
+                    </div>
+                </div>
+                <div style="border:1px solid #f5f5f5;margin-bottom:10px"></div>
+                <div id="record-div" class="form-group">
+                    {% for cr in marketrecords %}
+                        <div id="{{cr.recordid}}" class="row record-div-line">
+                            <div class="form-group">
+                                <div class="col-sm-6">
+                                    <img src="{{cr.recorder.avatar}}" style="width: 40px; margin-right: 10px;"></img>
+                                    <span>{{cr.recorder.name}}({{cr.recorder.nickname}})</span>
+                                </div>
+                                <div class="col-sm-9" style="margin-top:5px">
+                                    <span style="font-size:14px">{{cr.content | safe}}</span><span style="color:#999">编辑于：{{cr.ct_ui[:]}}</span>&nbsp
+                                    <br><a class="buddy-btn-a" style="" onclick="rmrecord('{{cr.recordid}}')" href="#">删除</a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock right_content %}

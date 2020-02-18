@@ -1,0 +1,68 @@
+{% extends "platform/index.html" %}
+{% block title %} {{ super() }}{% endblock title %}
+
+{% block head %}
+    {{ super() }}
+    <script type="text/javascript">
+        $(document).ready(function() {
+
+        });
+    </script>
+    <style type="text/css">
+    </style>
+{% endblock head %}
+
+{% block right_content %}
+    <form class="form-horizontal" action="/{{session.appname}}/platform/vip/card/update" method='post'>
+        <input  type="hidden" name="target_cardid" value="{{form.cardid or ''}}">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">会员卡创建</h3>
+      </div>
+      <div class="panel-body">
+          {% if msg %}
+          <p style="color: red">{{msg}}</p>
+          {% endif %}
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label">
+              <span style="color: red;">*</span>&nbsp;会员卡名称：
+            </label>
+            <div class="col-sm-5">
+                <input type='text' class='form-control' id="name" name='name' value="{{form.name or ''}}" placeholder="如海参粥会员" required >
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label">
+              <span style="color: red;">*</span>&nbsp;关联产品：
+            </label>
+          <div class="col-sm-5">
+              <select  class="form-control"  name='product'>
+                <option value="">---请选择产品---</option>
+              {% for p in products %}
+                <option value="{{p.productid}}" selected>{{p.name}}</option>
+              {% endfor %}
+            </select>
+          </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label">产品份数：</label>
+            <div class="col-sm-5">
+                <input type='number' class='form-control' name="num" id="num"  value="{{form.num or ''}}" placeholder="产品份数" >
+                <span class="help-block">此会员卡包含对应产品的份数</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="col-sm-2 control-label"></label>
+            <div class="col-sm-2">
+              <button type="submit" class="btn btn-block" style="background: #370307;color:#fff;text-shadow: none">保存</button>
+            </div>
+          </div>
+      </div>
+    </div>
+
+    </form>
+
+{% endblock right_content %}

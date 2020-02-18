@@ -1,0 +1,73 @@
+main:
+  prefix: jmdev
+  deploy: dev
+  appname: devconsole
+  appname_cn: 'JMZP'
+  appname_cn_long: 'JMZP'
+  scheme: https
+  domain: testapi.buddydc.com
+  appids: [11]
+  debugmode: true
+  appdownloadurl: https://a.app.qq.com/o/simple.jsp?pkgname=com.app_faly_nativeapp&from=singlemessage
+  appicon_large: https://images.buddydc.com/rs/imgs/1524667735604_c7513902489711e8a2b900163e0cf762.png
+  appicon_small: https://images.buddydc.com/rs/imgs/1524667735604_c7513902489711e8a2b900163e0cf762.png
+  h5appname: jiamei
+  h5scheme: https
+  h5domain: jiameih5.buddydc.com
+  loggers:
+    default: {'level': 'debug', 'handlers': ['stdout']}
+  request:
+    sigkeys:
+      '1': '528fc508a5327d31e0738ae1dd9c93ac'
+  redissession:
+    # 可选项，默认使用flask.session
+    # server-side session 方案，使用flask-session中的redis session方案
+    session_redis: redis://12345qwertRedis@localhost:6379/11
+
+  redis:
+    instances:
+      - redis://12345qwertRedis@localhost:6379/12
+      - redis://12345qwertRedis@localhost:6379/12
+  rds:
+    poolconfig: {'pool_size': 30}
+    binds:
+      app: mysql+pymysql://jiamei:12345qwertRds@localhost:3306/jmtest?charset=utf8mb4
+      user: mysql+pymysql://jiamei:12345qwertRds@localhost:3306/jmtest?charset=utf8mb4
+      wallet: mysql+pymysql://jiamei:12345qwertRds@localhost:3306/jmtest?charset=utf8mb4
+      jiamei: mysql+pymysql://jiamei:12345qwertRds@localhost:3306/jmtest?charset=utf8mb4
+      order: mysql+pymysql://jiamei:12345qwertRds@localhost:3306/jmtest?charset=utf8mb4
+      mm: mysql+pymysql://jiamei:12345qwertRds@localhost:3306/jmtest?charset=utf8mb4
+      crm: mysql+pymysql://jiamei:12345qwertRds@localhost:3306/jmtest?charset=utf8mb4
+      sns: mysql+pymysql://jiamei:12345qwertRds@localhost:3306/jmtest?charset=utf8mb4
+      resource: mysql+pymysql://jiamei:12345qwertRds@localhost:3306/jmtest?charset=utf8mb4
+
+  qiyehao:
+    groups:
+      order: {'agentid': 1000002, 'totag': '1', 'corpid': 'ww29e6006d0bc04e12','secret':'WG1tJ6aW0ff_EiFbNhyD4cwFZoqRBU1-8t6517vVZZ8'}
+      datas: {'agentid': 1000003, 'totag': '2', 'corpid': 'ww29e6006d0bc04e12','secret':'s0VSla2lxwxSy4DccRUZzBLz3GRYveNY-nHE_HQCzck'}
+  aliyun:
+    oss: {'endpoint': 'oss-cn-beijing-internal.aliyuncs.com', 'urlscheme': 'https', 'urldomain': 'images.buddydc.com', 'accessid': 'LTAIsOyXPz81pZDw', 'accesskey': 'ppHQNtW0kxdHtul9fzp4LPDnAz1ntT'}
+
+user:
+  signup_account_type:
+    - 'weixin'
+    - 'weixinminiapp'
+    - 'phone'
+  chuanglan_sms: {'account': 'N0470776', 'password': 'ZQEgXhI4xb3a08', 'host': 'smssh1.253.com'}
+  third_accounts:
+    phone:
+      phone: {'name': '手机'}
+    weixinmp:
+      weixin: {'name': '', 'appid': '', 'secret': ''}
+    weixinminiapp:
+      weixinminiapp: {'name':'加美珍品会员服务', 'appid': 'wx2936898583a63172', 'secret': 'bedf83217ded965ce5d17bcdb21d8762'} #小程序
+  weixin_mp:
+    token: 71ad2c1e90a5ca43a50b2d8671cf4c03
+    originid: gh_f36a1b3c78f3
+    domain: h5.healthyworld.com.cn
+    slogan: "加美珍品会员服务"
+  whitelist:
+    - '18810541701'
+    - '13311379903'
+basicdata:
+  district: !import local:district.json

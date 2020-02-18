@@ -1,0 +1,26 @@
+{% extends "base_2.html" %}
+{% block title %}{{ super() }}{% endblock title %}
+{% block head %}
+    {{ super() }}
+{% endblock head %}
+
+{% block left_content %}
+    <div class="list-group">
+        <a class="list-group-item active" href="#">会员</a>
+        <a class="list-group-item" href="/{{session.appname}}/user/query?target_uid={{session.user.uid}}">我的直属客户</a>
+        <a class="list-group-item" href="/{{session.appname}}/user/related/query?target_uid={{session.user.uid}}">我的相关客户</a>
+        <a class="list-group-item" href="/{{session.appname}}/user/team/query?target_uid={{session.user.uid}}">我的团队</a>
+    </div>
+    <div class="list-group">
+        <a class="list-group-item active" href="#">日报</a>
+        <a class="list-group-item" href="/{{session.appname}}/user/report/serviceteamopreport/daily/query">专属团队日报</a>
+        <a class="list-group-item" href="/{{session.appname}}/user/report/staffopreport/daily/query">个人日报</a>
+    </div>
+
+{% endblock left_content%}
+
+{% block right_content %}
+    <div class="text-center" style="margin-top: 150px; text-align: center;">
+      本功能正在设计研发中，敬请期待！
+    </div>
+{% endblock right_content %}
