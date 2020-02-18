@@ -28,9 +28,6 @@ app.mount([utilsview_blueprint], prefix={utilsview_blueprint.name: '/%s' % confi
 from dlhxconsole.view.fileview import blueprint as fileview_blueprint
 app.mount([fileview_blueprint], prefix={fileview_blueprint.name: '/%s' % config.appname})
 
-# 产品接口
-from dlhxconsole.view.productview import blueprint as productview_blueprint
-app.mount([productview_blueprint], prefix={productview_blueprint.name: '/%s' % config.appname})
 
 # 用户消息管理
 from dlhxconsole.view.usermessageview import blueprint as usermessageview_blueprint

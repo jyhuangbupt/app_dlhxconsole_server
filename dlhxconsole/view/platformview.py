@@ -15,13 +15,10 @@ from xdock_user.lib.staff import StaffRoleStatus, StaffRole, StaffPostStatus, St
 from xdock_user.lib import userconfig
 from xdock_crm.lib.marketrecord import CRMMarketRecord
 from xdock_user.lib.user import __usersignal__
-from xdock_jiamei.lib.vip import *
-from xdock_jiamei.lib.order import *
-from xdock_jiamei.lib.product import *
 
-logger = logging.getLogger('console.jiamei.platform.view')
+logger = logging.getLogger('console.dlhx.platform.view')
 
-blueprint = Blueprint('console.jiamei.platform', __name__, url_prefix='/platform')
+blueprint = Blueprint('console.dlhx.platform', __name__, url_prefix='/platform')
 
 @blueprint.route('', methods=['GET', 'POST'])
 @blueprint.route('/', methods=['GET', 'POST'])
@@ -190,7 +187,7 @@ def api_platform_vip_card_delete():
 # # 会员卡下架
 @blueprint.route('/vip/card/offset', methods=['GET', 'POST'])
 @needlogin
-def api_jiamei_vipcard_offset():
+def api_dlhx_vipcard_offset():
     '''会员卡下架'''
     vipcard = VipCard(cardid=request.values.get('cardid'))
     if not vipcard.exists:
@@ -203,7 +200,7 @@ def api_jiamei_vipcard_offset():
 #会员卡发布
 @blueprint.route('/vip/card/publish', methods=['GET', 'POST'])
 @needlogin
-def api_jiamei_vipcard_publish():
+def api_dlhx_vipcard_publish():
     '''会员卡上架'''
     vipcard = VipCard(cardid=request.values.get('cardid'))
     if not vipcard.exists:
@@ -216,7 +213,7 @@ def api_jiamei_vipcard_publish():
 
 @blueprint.route('/vip/card/stick', methods=['POST'])
 @needlogin
-def api_jiamei_vipcard_stick():
+def api_dlhx_vipcard_stick():
     vipcard = VipCard(cardid=request.values.get('cardid'))
     if not vipcard.exists:
         raise BadRequest(description='该会员卡不存在！')
@@ -234,7 +231,7 @@ def api_platform_user_vip_query():
         vipcards = VipCard.query(**{})
         newcards = []
         for v in vipcards:
-            jiameiVip = JiameiVip.query(uid=uid, cardid=v.cardid)
+            dlhxVip = JiameiVip.query(uid=uid, cardid=v.cardid)
             if len(jiameiVip) > 0:
                 v.num = jiameiVip[0].remain
                 v.opened = True,

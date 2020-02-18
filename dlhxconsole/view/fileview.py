@@ -4,7 +4,7 @@
 from flask import Blueprint, request, json
 from xdock.bases import json, logging
 from xdock.apps import apphelper, BadRequest
-from xdock_jiamei.lib.file import FalyImageFile
+from xdock_dlhx.lib.file import FalyImageFile
 
 logger = logging.getLogger('faly.view.file')
 

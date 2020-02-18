@@ -6,7 +6,7 @@ from xdock.apps import NotAllowed, NotFound, BadRequest
 from xdock_user.lib import User, UserRDS
 from xdock.apps import XDockBlueprint as Blueprint
 
-logger = logging.getLogger('console.jiamei.common.view')
+logger = logging.getLogger('console.dlhx.common.view')
 
 blueprint = Blueprint('console.faly.common', __name__, url_prefix='/common')
 
