@@ -197,7 +197,7 @@ def api_user_login():
             return render_template('user/login.html', message={'alert': '输入错误，请重新登录！'})
         ta = ThirdAccount(thirdtype=ThirdAccountType.phone, thirdid=phone)
         if not ta.exists:
-            return render_template('user/login.html', message={'alert': '该账户不存在，请先注册HNK帐号，并绑定手机号.'})
+            return render_template('user/login.html', message={'alert': '该账户不存在!'})
         usertoken = UserToken(uid=ta.uid, appid=config.appids[0])
         if usertoken.token != token:
             return render_template('user/login.html', message={'alert': '输入错误，请重新登录！'})
